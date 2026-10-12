@@ -1,3 +1,4 @@
+
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -19,10 +20,12 @@ const authLimiter = rateLimit({
   }
 });
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000
 };
@@ -138,11 +141,9 @@ router.post("/register", authLimiter, async (req, res) => {
       password: hashedPassword
     });
 
-    res.cookie(
-      "thoughtsnap_token",
-      createToken(user._id),
-      cookieOptions
-    );
+    const token = createToken(user._id);
+
+    res.cookie("thoughtsnap_token", token, cookieOptions);
 
     return res.status(201).json({
       success: true,
@@ -197,11 +198,9 @@ router.post("/login", authLimiter, async (req, res) => {
       });
     }
 
-    res.cookie(
-      "thoughtsnap_token",
-      createToken(user._id),
-      cookieOptions
-    );
+    const token = createToken(user._id);
+
+    res.cookie("thoughtsnap_token", token, cookieOptions);
 
     return res.json({
       success: true,
@@ -230,8 +229,8 @@ router.get("/me", auth, (req, res) => {
 router.post("/logout", (req, res) => {
   res.clearCookie("thoughtsnap_token", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/"
   });
 
