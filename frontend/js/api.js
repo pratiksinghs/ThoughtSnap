@@ -1,4 +1,3 @@
-
 const isLocal =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1";
@@ -7,7 +6,7 @@ const API_BASE_URL = (
   window.THOUGHTSNAP_API_URL ||
   (isLocal
     ? "http://localhost:5000/api"
-    : "https://YOUR-RENDER-BACKEND.onrender.com/api")
+    : "https://thoughtsnap-backend.onrender.com/api")
 ).replace(/\/+$/, "");
 
 const API = {
