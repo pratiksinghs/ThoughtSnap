@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta name="theme-color" content="#2563eb">
+
+  <meta name="description" content="ThoughtSnap — Share your thoughts, capture moments, and connect with people.">
+
+  <title>ThoughtSnap — Share Your World</title>
+
+<style>
+
+:root{--blue:#2563eb;--blue-dark:#1d4ed8;--ink:#172554;--muted:#64748b;--line:#e5eaf3;--surface:#fff;--soft:#f5f8ff;--purple:#8b5cf6;--orange:#f97316}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+body{margin:0;background:#f8faff;color:#172033;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.6}
+a{color:inherit;text-decoration:none}
+img{max-width:100%}
+button,input,textarea{font:inherit}
+.navbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:15px clamp(18px,5vw,76px);background:rgba(255,255,255,.94);border-bottom:1px solid #e9eef7;backdrop-filter:blur(14px)}
+.brand{display:inline-flex;align-items:center;gap:10px;font-size:21px;font-weight:850;letter-spacing:-.7px;color:var(--ink);white-space:nowrap}
+.brand-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-weight:900;box-shadow:0 6px 14px #2563eb35}
+.nav-links,.nav-actions{display:flex;align-items:center;gap:24px}
+.nav-links a{color:#64748b;font-size:14px;font-weight:650;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:var(--blue)}
+.nav-actions{gap:10px}
+.btn{display:inline-flex;justify-content:center;align-items:center;gap:9px;border:1px solid transparent;border-radius:12px;padding:10px 17px;font-weight:750;font-size:14px;cursor:pointer;transition:transform .2s,box-shadow .2s,background .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn-primary{color:#fff;background:linear-gradient(135deg,#3b82f6,#2563eb);box-shadow:0 7px 16px #2563eb28}
+.btn-primary:hover{background:var(--blue-dark);box-shadow:0 9px 20px #2563eb38}
+.btn-light{background:#fff;border-color:#e1e8f3;color:#334155}
+.btn-light:hover{background:#f5f8ff}
+.btn-white{background:#fff;color:#1d4ed8}
+.btn-large{padding:13px 21px;font-size:15px;border-radius:13px}
+.hero{display:grid;grid-template-columns:1.02fr .98fr;align-items:center;gap:clamp(32px,6vw,90px);max-width:1240px;margin:0 auto;padding:76px 36px 82px;min-height:570px}
+.hero-content{max-width:600px}
+.eyebrow{display:inline-flex;align-items:center;gap:9px;color:#2563eb;font-size:11px;font-weight:850;letter-spacing:1.5px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px #22c55e1c}
+.hero h1{font-size:clamp(42px,5.2vw,72px);line-height:1.07;letter-spacing:-3.6px;color:#111c39;margin:22px 0}
+.hero h1 span,.section-heading h2 span{color:var(--blue)}
+.hero-description{max-width:520px;color:#64748b;font-size:17px;line-height:1.85;margin:0 0 25px}
+.hero-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.hero-note{display:flex;align-items:center;gap:13px;margin-top:27px;color:#64748b;font-size:13px}
+.avatar-stack{display:flex;padding-left:3px}
+.avatar-stack span{display:grid;place-items:center;width:29px;height:29px;margin-left:-3px;border:2px solid #fff;border-radius:50%;background:#e8efff;font-size:14px}
+.hero-visual{position:relative;display:grid;place-items:center;min-height:420px}
+.preview-post{width:min(100%,360px);overflow:hidden;background:#fff;border:1px solid #e8edf6;border-radius:24px;box-shadow:0 28px 70px #1e3a8a1b;transform:rotate(2deg);z-index:2}
+.preview-image{height:245px;position:relative;overflow:hidden;background:#dbeafe}
+.preview-image img{width:100%;height:100%;object-fit:cover;display:block}
+.image-label{position:absolute;left:15px;bottom:14px;background:#ffffffdf;border-radius:7px;padding:5px 9px;font-size:9px;font-weight:850;letter-spacing:1px;color:#1e3a8a}
+.preview-post-content{padding:17px 19px}
+.preview-user{display:flex;align-items:center;gap:10px}
+.user-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#dbeafe;color:#1d4ed8;font-weight:850}
+.preview-user strong,.preview-user small{display:block}
+.preview-user strong{font-size:13px;color:#1e293b}
+.preview-user small{font-size:11px;color:#94a3b8}
+.more-icon{margin-left:auto;color:#94a3b8;letter-spacing:2px}
+.preview-post-content>p{font-size:13px;color:#475569;margin:17px 0}
+.preview-reactions{display:flex;gap:14px;color:#64748b;font-size:11px;border-top:1px solid #f1f5f9;padding-top:13px}
+.floating-card{position:absolute;z-index:3;display:flex;align-items:center;gap:11px;padding:13px 16px;border:1px solid #e8edf7;border-radius:15px;background:#ffffffef;box-shadow:0 14px 35px #1e3a8a14;backdrop-filter:blur(12px)}
+.floating-card strong,.floating-card small{display:block}
+.floating-card strong{font-size:12px;color:#1e293b}
+.floating-card small{font-size:10px;color:#94a3b8;margin-top:2px}
+.floating-card-top{top:20px;left:-8px}
+.floating-card-bottom{bottom:22px;right:-6px}
+.floating-icon,.reaction-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:#eff6ff;color:#2563eb;font-size:20px}
+.reaction-icon{background:#fff1f2;color:#f43f5e}
+.features,.feed-section{padding:65px clamp(18px,5vw,76px);max-width:1320px;margin:0 auto}
+.features{padding-top:50px;padding-bottom:75px}
+.section-heading{text-align:center;max-width:640px;margin:0 auto 35px}
+.section-heading h2,.feed-heading h2{margin:9px 0;font-size:clamp(28px,3.5vw,42px);line-height:1.2;letter-spacing:-1.5px;color:#172033}
+.section-heading p{margin:10px 0;color:#718096}
+.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.feature-card{padding:26px;border:1px solid #e8edf6;border-radius:19px;background:#fff;box-shadow:0 8px 24px #1e3a8a08;transition:transform .2s,box-shadow .2s}
+.feature-card:hover{transform:translateY(-4px);box-shadow:0 15px 35px #1e3a8a10}
+.feature-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;font-size:25px;margin-bottom:19px}
+.feature-icon.blue{background:#eff6ff;color:#2563eb}.feature-icon.purple{background:#f5f3ff;color:#8b5cf6}.feature-icon.orange{background:#fff7ed;color:#f97316}
+.feature-card h3{font-size:17px;margin:0 0 8px;color:#1e293b}
+.feature-card p{font-size:14px;line-height:1.75;margin:0;color:#718096}
+.feed-section{padding-top:44px;padding-bottom:55px}
+.feed-heading{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:20px}
+.feed-heading h2{font-size:32px;margin-bottom:0}
+.text-link{font-size:13px;font-weight:750;color:var(--blue)}
+.post-composer{width:100%;max-width:760px;margin:22px auto 30px;padding:28px;background:#fff;border:1px solid #e5eaf3;border-radius:22px;box-shadow:0 12px 35px #2563eb14;box-sizing:border-box}
+.post-composer[hidden],.post-composer form[hidden],#composer-login-prompt[hidden],#post-form-error[hidden],#post-form-success[hidden]{display:none!important}
+#composer-login-prompt>p{margin:0 0 16px;color:#64748b}
+.post-composer label{display:block;margin:18px 0 8px;color:#172554;font-weight:700}
+.post-composer input[type=file],.post-composer textarea{display:block;width:100%;padding:13px;color:#1e293b;background:#f8fafc;border:1px solid #dbe4f0;border-radius:12px;font:inherit;box-sizing:border-box}
+.post-composer textarea{min-height:110px;resize:vertical}
+.post-composer input:focus,.post-composer textarea:focus{outline:3px solid #2563eb21;border-color:#2563eb}
+.post-composer button{margin-top:18px;cursor:pointer}
+.post-composer button:disabled{opacity:.65;cursor:wait}
+#post-form-error,#post-form-success{margin-top:14px;padding:12px 14px;border-radius:10px;font-size:14px}
+#post-form-error{color:#b91c1c;background:#fef2f2}
+#post-form-success{color:#166534;background:#f0fdf4}
+.feed-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;align-items:start}
+.loading-card{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:12px;padding:45px 20px;background:#fff;border:1px solid #e5eaf3;border-radius:18px;color:#64748b}
+.loading-spinner{width:20px;height:20px;border:2px solid #dbeafe;border-top-color:#2563eb;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.feed-card{min-width:0;overflow:hidden;background:#fff;border:1px solid #e5eaf3;border-radius:18px;box-shadow:0 8px 25px #0f172a0d}
+.feed-card-header{display:flex;align-items:center;gap:12px;padding:16px}
+.feed-card-header strong{color:#172554}
+.feed-card-header p{margin:3px 0 0;color:#64748b;font-size:13px}
+.feed-card-image{display:block;width:100%;max-height:480px;object-fit:cover}
+.feed-card-content{padding:16px}
+.feed-caption{color:#334155;line-height:1.65;overflow-wrap:anywhere;white-space:pre-wrap}
+.feed-card-actions{display:flex;flex-wrap:wrap;gap:16px;padding:12px 0;border-top:1px solid #eef2f7;color:#64748b;font-size:14px}
+.post-like-button{padding:0;color:#2563eb;background:transparent;border:0;font:inherit;font-weight:700;cursor:pointer}
+.post-comments{display:grid;gap:8px}
+.post-comments p{margin:0;color:#475569;font-size:14px;overflow-wrap:anywhere}
+.comment-form{display:flex;gap:8px;margin-top:14px}
+.comment-form input{min-width:0;flex:1;padding:10px;border:1px solid #dbe4f0;border-radius:10px}
+.comment-form button{padding:10px 14px;color:#fff;background:#2563eb;border:0;border-radius:10px;cursor:pointer}
+.cta-section{display:flex;align-items:center;justify-content:space-between;gap:30px;margin:25px clamp(18px,5vw,76px) 65px;padding:38px clamp(22px,4vw,54px);border-radius:24px;background:linear-gradient(120deg,#1d4ed8,#3b82f6);color:#fff}
+.cta-section .eyebrow{color:#dbeafe}
+.cta-section h2{margin:8px 0;font-size:clamp(24px,3vw,35px);line-height:1.2;letter-spacing:-1px}
+.cta-section p{margin:8px 0 0;color:#dbeafe;font-size:14px}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px clamp(18px,5vw,76px);border-top:1px solid #e8edf6;background:#fff}
+.footer p,.footer>span{font-size:12px;color:#94a3b8}
+@media(max-width:950px){.hero{gap:25px;padding-top:55px}.hero h1{letter-spacing:-2.5px}.feed-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-links{gap:14px}}
+@media(max-width:700px){.navbar{padding:12px 17px;flex-wrap:wrap;gap:12px}.nav-links{order:3;width:100%;justify-content:center;border-top:1px solid #f1f5f9;padding-top:10px}.nav-actions{margin-left:auto}.nav-actions .btn{padding:8px 11px;font-size:12px}.brand{font-size:19px}.hero{grid-template-columns:1fr;padding:48px 22px 60px}.hero-content{margin:auto}.hero h1{font-size:48px}.hero-visual{min-height:390px;max-width:450px;width:100%;margin:0 auto}.floating-card-top{left:0}.floating-card-bottom{right:0}.features,.feed-section{padding:48px 20px}.feature-grid{grid-template-columns:1fr}.feature-card{padding:22px}.feed-heading{align-items:start;flex-direction:column}.feed-heading h2{font-size:29px}.feed-grid{grid-template-columns:1fr}.post-composer{padding:18px}.cta-section{margin:15px 18px 45px;align-items:flex-start;flex-direction:column;padding:28px 22px}.footer{flex-wrap:wrap;justify-content:center;text-align:center}.footer .brand{width:100%;justify-content:center}}
+@media(max-width:380px){.hero h1{font-size:41px}.hero-visual{min-height:350px}.preview-post{width:92%}.floating-card{padding:10px}.nav-actions{gap:5px}}
+
+</style>
+
+</head>
+
+<body>
+
+  <header class="navbar">
+
+    <a class="brand" href="index.html">
+
+      <span class="brand-icon">T</span>
+
+      ThoughtSnap
+
+    </a>
+
+
+
+    <nav class="nav-links">
+
+      <a class="active" href="index.html">Home</a>
+
+      <a href="#discover">Discover</a>
+
+      <a href="#feed">Community</a>
+
+    </nav>
+
+
+
+    <div class="nav-actions" id="nav-actions">
+
+      <a class="btn btn-light" href="login.html">Log in</a>
+
+      <a class="btn btn-primary" href="register.html">Get started</a>
+
+    </div>
+
+  </header>
+
+
+
+  <main>
+
+    <section class="hero">
+
+      <div class="hero-content">
+
+        <span class="eyebrow">
+
+          <span class="status-dot"></span>
+
+          YOUR MOMENTS. YOUR STORY.
+
+        </span>
+
+
+
+        <h1>Every picture<br>has a <span>thought.</span></h1>
+
+
+
+        <p class="hero-description">
+
+          A place to share your moments, express your thoughts,
+
+          and discover the world through other people's eyes.
+
+        </p>
+
+
+
+        <div class="hero-actions">
+
+          <a class="btn btn-primary btn-large" href="register.html">
+
+            Join ThoughtSnap <span aria-hidden="true">→</span>
+
+          </a>
+
+          <a class="btn btn-light btn-large" href="#feed">
+
+            Explore posts
+
+          </a>
+
+        </div>
+
+
+
+        <div class="hero-note">
+
+          <span class="avatar-stack">
+
+            <span>😊</span><span>📸</span><span>🌎</span>
+
+          </span>
+
+          <span>A little moment can mean a lot.</span>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="hero-visual" aria-label="Photo sharing preview">
+
+        <div class="floating-card floating-card-top">
+
+          <span class="floating-icon">✦</span>
+
+          <span><strong>Capture it.</strong><small>Keep the moment alive</small></span>
+
+        </div>
+
+
+
+        <article class="preview-post">
+
+          <div class="preview-image">
+
+            <img
+
+              src="https\://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=85"
+
+              alt="Mountain lake beneath a colorful sky"
+
+            >
+
+            <span class="image-label">A MOMENT IN TIME</span>
+
+          </div>
+
+          <div class="preview-post-content">
+
+            <div class="preview-user">
+
+              <div class="user-avatar">A</div>
+
+              <div>
+
+                <strong>alex.moments</strong>
+
+                <small>Somewhere peaceful</small>
+
+              </div>
+
+              <span class="more-icon">•••</span>
+
+            </div>
+
+            <p>Sometimes, all you need is a little peace and a beautiful view. ✨</p>
+
+            <div class="preview-reactions">
+
+              <span>♡ 248</span>
+
+              <span>♡ 36 comments</span>
+
+              <span>↗</span>
+
+            </div>
+
+          </div>
+
+        </article>
+
+
+
+        <div class="floating-card floating-card-bottom">
+
+          <span class="reaction-icon">♥</span>
+
+          <span><strong>Share your vibe</strong><small>Let the world see it</small></span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="features" id="discover">
+
+      <div class="section-heading">
+
+        <span class="eyebrow">MADE FOR YOUR MOMENTS</span>
+
+        <h2>Your world, <span>your way.</span></h2>
+
+        <p>More than pictures. A space for everything you want to share.</p>
+
+      </div>
+
+
+
+      <div class="feature-grid">
+
+        <article class="feature-card">
+
+          <div class="feature-icon blue">▧</div>
+
+          <h3>Share moments</h3>
+
+          <p>Post your favorite photos and add the thoughts behind them.</p>
+
+        </article>
+
+        <article class="feature-card">
+
+          <div class="feature-icon purple">♡</div>
+
+          <h3>Connect with people</h3>
+
+          <p>Discover posts, follow creators, and join the conversation.</p>
+
+        </article>
+
+        <article class="feature-card">
+
+          <div class="feature-icon orange">✦</div>
+
+          <h3>Express yourself</h3>
+
+          <p>Build your profile and make every post a little more personal.</p>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- Create-post composer -->
+
+    <section class="feed-section" id="create-post-section">
+
+      <div class="feed-heading">
+
+        <div>
+
+          <span class="eyebrow">YOUR NEXT MOMENT</span>
+
+          <h2>Share a thought</h2>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="post-composer" id="post-composer">
+
+        <div id="composer-login-prompt">
+
+          <p>Have a moment to share with the community?</p>
+
+          <div class="hero-actions">
+
+            <a class="btn btn-primary" href="login.html">Log in to post</a>
+
+            <a class="btn btn-light" href="register.html">Create account</a>
+
+          </div>
+
+        </div>
+
+
+
+        <form id="create-post-form" hidden enctype="multipart/form-data">
+
+          <label for="post-image">Choose a photo</label>
+
+          <input
+
+            type="file"
+
+            id="post-image"
+
+            name="image"
+
+            accept="image/jpeg,image/png,image/webp,image/gif">
+
+
+
+          <label for="post-caption">Caption or thought</label>
+
+          <textarea
+
+            id="post-caption"
+
+            name="caption"
+
+            maxlength="2000"
+
+            rows="4"
+
+            placeholder="What's on your mind? Share the story behind your photo..."
+
+          ></textarea>
+
+
+
+          <p id="post-form-error" role="alert" hidden></p>
+
+          <p id="post-form-success" role="status" hidden></p>
+
+
+
+          <button class="btn btn-primary btn-large" id="publish-post-button" type="submit">
+
+            Share post →
+
+          </button>
+
+        </form>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="feed-section" id="feed">
+
+      <div class="feed-heading">
+
+        <div>
+
+          <span class="eyebrow">FROM THE COMMUNITY</span>
+
+          <h2>Explore the feed</h2>
+
+        </div>
+
+        <a class="text-link" href="register.html">Join the conversation →</a>
+
+      </div>
+
+
+
+      <div id="feed-container" class="feed-grid">
+
+        <div class="loading-card">
+
+          <div class="loading-spinner"></div>
+
+          <p>Loading community posts...</p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="cta-section">
+
+      <div>
+
+        <span class="eyebrow">YOUR STORY STARTS HERE</span>
+
+        <h2>Got a moment worth sharing?</h2>
+
+        <p>Make your first post and let your story find its audience.</p>
+
+      </div>
+
+      <a class="btn btn-white btn-large" href="register.html">Create your account →</a>
+
+    </section>
+
+  </main>
+
+
+
+  <footer class="footer">
+
+    <a class="brand" href="index.html">
+
+      <span class="brand-icon">T</span>
+
+      ThoughtSnap
+
+    </a>
+
+    <p>Made for moments that matter.</p>
+
+    <span>© <span id="current-year">2026</span> ThoughtSnap</span>
+
+  </footer>
+
+
+
+  <script src="js/api.js"></script>
+
+  <script src="js/app.js"></script>
+
+  <script src="js/auth.js"></script>
+
+</body>
+
+</html>
