@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 
 const express = require("express");
@@ -15,12 +16,19 @@ const app = express();
 
 app.disable("x-powered-by");
 
+// Render is the trusted reverse proxy in production.
+// Do not trust arbitrary client-supplied forwarding headers.
 const production = process.env.NODE_ENV === "production";
+
+if (production) {
+  app.set("trust proxy", 1);
+}
 
 const allowedOrigins = new Set(
   [
     "http://localhost:5500",
     "http://127.0.0.1:5500",
+    "https://thoughtsnapp.vercel.app",
     process.env.FRONTEND_URL
   ].filter(Boolean)
 );
@@ -34,7 +42,7 @@ app.use(
         !origin ||
         allowedOrigins.has(origin) ||
         (!production &&
-          /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))
+          /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin))
       ) {
         return callback(null, true);
       }
