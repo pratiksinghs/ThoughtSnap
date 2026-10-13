@@ -1,3 +1,4 @@
+
 const isLocal =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1";
@@ -37,9 +38,10 @@ const API = {
 
     try {
       response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-    } catch {
+    } catch (error) {
+      console.error("ThoughtSnap API connection error:", error);
       throw new Error(
-        "Cannot connect to ThoughtSnap. Check the backend URL and server status."
+        "Failed to connect to ThoughtSnap. Please check your internet and backend."
       );
     }
 
