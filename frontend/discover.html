@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -299,7 +298,17 @@
   </main>
 
   <script>
-    const API_BASE_URL = "http://localhost:5000/api";
+    // Use localhost for local testing and Render for the deployed website.
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+
+    const API_BASE_URL = (
+      window.THOUGHTSNAP_API_URL ||
+      (isLocal
+        ? "http://localhost:5000/api"
+        : "https://thoughtsnap-backend.onrender.com/api")
+    ).replace(/\/+$/, "");
 
     const searchForm = document.getElementById("search-form");
     const searchInput = document.getElementById("search-input");
@@ -308,21 +317,29 @@
     let currentUserId = "";
 
     async function request(path, options = {}) {
-      const response = await fetch(API_BASE_URL + path, {
-        credentials: "include",
-        ...options,
-        headers: {
-          ...(options.body ? {
-            "Content-Type": "application/json"
-          } : {}),
-          ...(options.headers || {})
-        }
-      });
+      let response;
+
+      try {
+        response = await fetch(API_BASE_URL + path, {
+          credentials: "include",
+          ...options,
+          headers: {
+            ...(options.body ? {
+              "Content-Type": "application/json"
+            } : {}),
+            ...(options.headers || {})
+          }
+        });
+      } catch (error) {
+        throw new Error(
+          "Could not connect to ThoughtSnap. Check the backend URL and your internet connection."
+        );
+      }
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok || data.success === false) {
-        throw new Error(data.message || "Request failed.");
+        throw new Error(data.message || `Request failed (${response.status}).`);
       }
 
       return data;
@@ -433,15 +450,13 @@
       profileLink.className = "profile-link";
       profileLink.textContent = "View profile";
 
-      // Always create a profile URL using this card's username.
-      const profileUrl = new URL("profile.html", window.location.href);
-      profileUrl.searchParams.set("username", usernameValue);
-      profileUrl.searchParams.set("source", "discover");
-
-      profileLink.href = profileUrl.href;
-
-      // Prevent opening a profile without a valid username.
-      if (!usernameValue) {
+      // Pass this card's username to profile.html so the correct profile opens.
+      if (usernameValue) {
+        const profileUrl = new URL("profile.html", window.location.href);
+        profileUrl.searchParams.set("username", usernameValue);
+        profileUrl.searchParams.set("source", "discover");
+        profileLink.href = profileUrl.href;
+      } else {
         profileLink.removeAttribute("href");
         profileLink.style.opacity = "0.5";
         profileLink.style.pointerEvents = "none";
@@ -470,7 +485,9 @@
 
         const users = Array.isArray(data.users)
           ? data.users
-          : [];
+          : Array.isArray(data.data?.users)
+            ? data.data.users
+            : [];
 
         const visibleUsers = users.filter(user => {
           const userId = getUserId(user);
@@ -516,7 +533,7 @@
         currentUserId = getUserId(user);
       } catch (error) {
         showMessage(
-          "Please log in first. Your ThoughtSnap session could not be verified.",
+          error.message || "Please log in first. Your ThoughtSnap session could not be verified.",
           true
         );
       }
