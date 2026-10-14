@@ -72,19 +72,22 @@ function uploadToCloudinary(buffer) {
         resource_type: "image"
       },
       (error, result) => {
-if (error) {
-  console.error("CLOUDINARY RAW ERROR:", error);
-  console.error(
-    "CLOUDINARY ERROR RESPONSE:",
-    error.http_code,
-    error.message,
-    error.error
-  );
-  return reject(error);
-}
-        if (!result) {
-          return reject(new Error("Cloudinary returned no upload result"));
+        if (error) {
+          console.error("Cloudinary upload error:", {
+            name: error.name,
+            message: error.message,
+            http_code: error.http_code
+          });
+
+          return reject(error);
         }
+
+        if (!result) {
+          return reject(
+            new Error("Cloudinary returned no upload result")
+          );
+        }
+
         resolve(result);
       }
     );
@@ -157,22 +160,21 @@ router.post("/", auth, handleUpload, async (req, res) => {
     if (req.file) {
       try {
         const result = await uploadToCloudinary(req.file.buffer);
+
         imageUrl = result.secure_url;
         imagePublicId = result.public_id;
         uploadedPublicId = result.public_id;
       } catch (uploadError) {
-        // Log diagnostic details, never credentials or request headers.
         console.error("Cloudinary upload failure:", {
           name: uploadError.name,
           message: uploadError.message,
-          http_code: uploadError.http_code,
-          code: uploadError.code,
-          error: uploadError.error
+          http_code: uploadError.http_code
         });
 
         return res.status(502).json({
           success: false,
-          message: "Image upload failed. Please check the backend logs."
+          message:
+            "Image upload failed. Please check the backend logs."
         });
       }
     }
@@ -192,27 +194,92 @@ router.post("/", auth, handleUpload, async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Post published successfully",
-      post: serializePost(populated, req.user._id.toString())
+      post: serializePost(
+        populated,
+        req.user._id.toString()
+      )
     });
   } catch (error) {
     if (uploadedPublicId) {
       try {
         await cloudinary.uploader.destroy(uploadedPublicId);
       } catch (cleanupError) {
-        console.error("Cloudinary cleanup failed:", cleanupError.message);
+        console.error(
+          "Cloudinary cleanup failed:",
+          cleanupError.message
+        );
       }
     }
 
     console.error("Create post error:", {
       name: error.name,
       message: error.message,
-      http_code: error.http_code,
       code: error.code
     });
 
     return res.status(500).json({
       success: false,
       message: "Unable to publish post"
+    });
+  }
+});
+
+// DELETE /api/posts/:id — delete your own post
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid post ID"
+      });
+    }
+
+    const post = await Post.findById(req.params.id);
+
+    if (!post) {
+      return res.status(404).json({
+        success: false,
+        message: "Post not found"
+      });
+    }
+
+    // Only the owner is allowed to delete this post.
+    if (post.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only delete your own posts"
+      });
+    }
+
+    // Delete the post from MongoDB first.
+    await Post.findByIdAndDelete(post._id);
+
+    // Attempt Cloudinary cleanup if the post has an image.
+    if (post.imagePublicId) {
+      try {
+        await cloudinary.uploader.destroy(
+          post.imagePublicId,
+          { resource_type: "image" }
+        );
+      } catch (cleanupError) {
+        console.error(
+          "Cloudinary delete cleanup failed:",
+          cleanupError.message
+        );
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: "Post deleted successfully",
+      postId: post._id.toString()
+    });
+  } catch (error) {
+    console.error("Delete post error:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to delete post"
     });
   }
 });
@@ -237,6 +304,7 @@ router.post("/:id/like", auth, async (req, res) => {
     }
 
     const userId = req.user._id;
+
     const alreadyLiked = post.likes.some(
       (id) => id.toString() === userId.toString()
     );
@@ -306,7 +374,8 @@ router.post("/:id/comments", auth, async (req, res) => {
       .populate("comments.author", "name username")
       .lean();
 
-    const comment = populated.comments[populated.comments.length - 1];
+    const comment =
+      populated.comments[populated.comments.length - 1];
 
     return res.status(201).json({
       success: true,
