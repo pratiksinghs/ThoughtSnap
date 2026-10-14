@@ -16,6 +16,12 @@ function handleUpload(req, res, next) {
   uploadImage(req, res, (error) => {
     if (!error) return next();
 
+    console.error("Image middleware error:", {
+      name: error.name,
+      message: error.message,
+      code: error.code
+    });
+
     return res.status(400).json({
       success: false,
       message: error.message || "Image upload failed"
@@ -24,7 +30,7 @@ function handleUpload(req, res, next) {
 }
 
 function serializePost(post, currentUserId) {
-  const liked = post.likes.some(
+  const liked = (post.likes || []).some(
     (id) => id.toString() === currentUserId
   );
 
@@ -40,9 +46,9 @@ function serializePost(post, currentUserId) {
           avatar: post.author.avatar
         }
       : null,
-    likesCount: post.likes.length,
+    likesCount: (post.likes || []).length,
     liked,
-    comments: post.comments.map((comment) => ({
+    comments: (post.comments || []).map((comment) => ({
       id: comment._id,
       text: comment.text,
       createdAt: comment.createdAt,
@@ -67,10 +73,14 @@ function uploadToCloudinary(buffer) {
       },
       (error, result) => {
         if (error) return reject(error);
+        if (!result) {
+          return reject(new Error("Cloudinary returned no upload result"));
+        }
         resolve(result);
       }
     );
 
+    stream.on("error", reject);
     Readable.from(buffer).pipe(stream);
   });
 }
@@ -92,12 +102,15 @@ router.get("/", async (req, res) => {
       posts: posts.map((post) => ({
         ...serializePost(post, currentUserId),
         liked: currentUserId
-          ? post.likes.some((id) => id.toString() === currentUserId)
+          ? (post.likes || []).some(
+              (id) => id.toString() === currentUserId
+            )
           : false
       }))
     });
   } catch (error) {
     console.error("Feed error:", error.message);
+
     return res.status(500).json({
       success: false,
       message: "Unable to load posts"
@@ -105,7 +118,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// POST /api/posts — create a public thought or photo post
+// POST /api/posts — create a text or photo post
 router.post("/", auth, handleUpload, async (req, res) => {
   let uploadedPublicId;
 
@@ -133,10 +146,26 @@ router.post("/", auth, handleUpload, async (req, res) => {
     let imagePublicId = "";
 
     if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer);
-      imageUrl = result.secure_url;
-      imagePublicId = result.public_id;
-      uploadedPublicId = result.public_id;
+      try {
+        const result = await uploadToCloudinary(req.file.buffer);
+        imageUrl = result.secure_url;
+        imagePublicId = result.public_id;
+        uploadedPublicId = result.public_id;
+      } catch (uploadError) {
+        // Log diagnostic details, never credentials or request headers.
+        console.error("Cloudinary upload failure:", {
+          name: uploadError.name,
+          message: uploadError.message,
+          http_code: uploadError.http_code,
+          code: uploadError.code,
+          error: uploadError.error
+        });
+
+        return res.status(502).json({
+          success: false,
+          message: "Image upload failed. Please check the backend logs."
+        });
+      }
     }
 
     const post = await Post.create({
@@ -161,16 +190,16 @@ router.post("/", auth, handleUpload, async (req, res) => {
       try {
         await cloudinary.uploader.destroy(uploadedPublicId);
       } catch (cleanupError) {
-        console.error("Cloudinary cleanup failed");
+        console.error("Cloudinary cleanup failed:", cleanupError.message);
       }
     }
 
-    console.error("Create post error details:", {
-  message: error.message,
-  name: error.name,
-  http_code: error.http_code,
-  error: error.error
-});
+    console.error("Create post error:", {
+      name: error.name,
+      message: error.message,
+      http_code: error.http_code,
+      code: error.code
+    });
 
     return res.status(500).json({
       success: false,
@@ -218,6 +247,7 @@ router.post("/:id/like", auth, async (req, res) => {
     });
   } catch (error) {
     console.error("Like error:", error.message);
+
     return res.status(500).json({
       success: false,
       message: "Unable to update like"
@@ -275,15 +305,18 @@ router.post("/:id/comments", auth, async (req, res) => {
         id: comment._id,
         text: comment.text,
         createdAt: comment.createdAt,
-        author: {
-          id: comment.author._id,
-          name: comment.author.name,
-          username: comment.author.username
-        }
+        author: comment.author
+          ? {
+              id: comment.author._id,
+              name: comment.author.name,
+              username: comment.author.username
+            }
+          : null
       }
     });
   } catch (error) {
     console.error("Comment error:", error.message);
+
     return res.status(500).json({
       success: false,
       message: "Unable to add comment"
