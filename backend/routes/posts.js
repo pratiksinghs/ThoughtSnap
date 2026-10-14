@@ -72,7 +72,16 @@ function uploadToCloudinary(buffer) {
         resource_type: "image"
       },
       (error, result) => {
-        if (error) return reject(error);
+if (error) {
+  console.error("CLOUDINARY RAW ERROR:", error);
+  console.error(
+    "CLOUDINARY ERROR RESPONSE:",
+    error.http_code,
+    error.message,
+    error.error
+  );
+  return reject(error);
+}
         if (!result) {
           return reject(new Error("Cloudinary returned no upload result"));
         }
