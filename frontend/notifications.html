@@ -1,0 +1,870 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f8ff">
+  <title>Notifications | ThoughtSnap</title>
+
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --ink: #172554;
+      --muted: #64748b;
+      --border: #e5eaf3;
+      --bg: #f5f8ff;
+      --white: #fff;
+      --shadow: 0 12px 35px rgba(15, 23, 42, .06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px clamp(18px, 5vw, 76px);
+      background: rgba(255, 255, 255, .95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: -.7px;
+      white-space: nowrap;
+    }
+
+    .brand-icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      box-shadow: 0 6px 14px #2563eb35;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--blue);
+    }
+
+    .page {
+      width: min(760px, calc(100% - 32px));
+      margin: 42px auto 70px;
+    }
+
+    .page-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 38px);
+      letter-spacing: -1.2px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 8px;
+      line-height: 1.6;
+    }
+
+    .mark-button {
+      border: 1px solid #dbeafe;
+      background: white;
+      color: var(--blue);
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .mark-button:hover {
+      background: var(--blue-light);
+    }
+
+    .mark-button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 20px;
+      margin-bottom: 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-label {
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .summary-description {
+      margin-top: 5px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .count-badge {
+      display: grid;
+      place-items: center;
+      min-width: 38px;
+      height: 38px;
+      padding: 0 10px;
+      border-radius: 13px;
+      background: var(--blue-light);
+      color: var(--blue);
+      font-weight: 850;
+    }
+
+    .panel {
+      overflow: hidden;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 19px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-heading h2 {
+      font-size: 16px;
+    }
+
+    .live-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+    }
+
+    .notification {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 19px 22px;
+      border-bottom: 1px solid #eef2f7;
+      transition: background .2s;
+    }
+
+    .notification:last-child {
+      border-bottom: 0;
+    }
+
+    .notification:hover {
+      background: #fafcff;
+    }
+
+    .notification.unread {
+      background: #f3f7ff;
+    }
+
+    .avatar {
+      display: grid;
+      flex: 0 0 46px;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      overflow: hidden;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      color: #1d4ed8;
+      font-weight: 850;
+      font-size: 16px;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+      padding-top: 2px;
+    }
+
+    .notification-text {
+      font-size: 14px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .notification-text strong {
+      color: #172554;
+      font-weight: 800;
+    }
+
+    .notification-time {
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 7px;
+    }
+
+    .notification-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .action-link {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .action-link:hover {
+      text-decoration: underline;
+    }
+
+    .unread-dot {
+      flex: 0 0 8px;
+      width: 8px;
+      height: 8px;
+      margin-top: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+    }
+
+    .notification:not(.unread) .unread-dot {
+      visibility: hidden;
+    }
+
+    .state {
+      padding: 52px 22px;
+      text-align: center;
+    }
+
+    .state-icon {
+      display: grid;
+      place-items: center;
+      width: 66px;
+      height: 66px;
+      margin: 0 auto 17px;
+      border-radius: 22px;
+      background: var(--blue-light);
+      font-size: 29px;
+    }
+
+    .state h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .state p {
+      max-width: 360px;
+      margin: 0 auto;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .retry-button {
+      margin-top: 17px;
+      padding: 10px 16px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--blue);
+      color: white;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .skeleton {
+      height: 82px;
+      margin: 14px 20px;
+      border-radius: 13px;
+      background: linear-gradient(90deg, #f1f5f9 25%, #e8eef8 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.3s infinite;
+    }
+
+    @keyframes shimmer {
+      to { background-position: -200% 0; }
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 30;
+      right: 20px;
+      bottom: 20px;
+      max-width: calc(100% - 40px);
+      padding: 14px 18px;
+      border-radius: 13px;
+      background: #172554;
+      color: white;
+      font-size: 13px;
+      box-shadow: 0 10px 30px #0f172a30;
+    }
+
+    .toast[hidden] {
+      display: none;
+    }
+
+    .footer {
+      padding: 24px 16px;
+      color: #94a3b8;
+      text-align: center;
+      font-size: 12px;
+    }
+
+    @media (max-width: 620px) {
+      .navbar {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 16px;
+      }
+
+      .nav-links {
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
+        gap: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #f1f5f9;
+      }
+
+      .nav-links a {
+        font-size: 12px;
+      }
+
+      .page {
+        margin-top: 27px;
+      }
+
+      .page-heading {
+        flex-direction: column;
+      }
+
+      .mark-button {
+        width: 100%;
+      }
+
+      .notification {
+        padding: 16px 13px;
+        gap: 10px;
+      }
+
+      .avatar {
+        flex-basis: 40px;
+        width: 40px;
+        height: 40px;
+      }
+
+      .panel-heading {
+        padding: 17px 15px;
+      }
+
+      .summary {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="navbar">
+    <a class="brand" href="index.html">
+      <span class="brand-icon">T</span>
+      <span>ThoughtSnap</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="index.html">Home</a>
+      <a href="discover.html">Discover</a>
+      <a href="notifications.html" class="active">Notifications</a>
+      <a href="profile.html">Profile</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Your activity</p>
+        <h1>Notifications 🔔</h1>
+        <p class="subtitle">
+          Stay up to date with the people and posts you care about.
+        </p>
+      </div>
+
+      <button class="mark-button" id="mark-all-button" type="button" disabled>
+        ✓ Mark all as read
+      </button>
+    </section>
+
+    <section class="summary" aria-live="polite">
+      <div>
+        <p class="summary-label">Your notifications</p>
+        <p class="summary-description" id="summary-description">
+          Loading your latest activity...
+        </p>
+      </div>
+      <span class="count-badge" id="unread-count">—</span>
+    </section>
+
+    <section class="panel">
+      <div class="panel-heading">
+        <h2>Recent activity</h2>
+        <span class="live-label">
+          <span class="live-dot"></span>
+          Latest updates
+        </span>
+      </div>
+
+      <div id="notification-list" aria-live="polite">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    ThoughtSnap · Share a thought. Capture a moment.
+  </footer>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const API_BASE_URL = (
+        window.THOUGHTSNAP_API_URL ||
+        (
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1"
+            ? "http://localhost:5000/api"
+            : "https://thoughtsnap-backend.onrender.com/api"
+        )
+      ).replace(/\/+$/, "");
+
+      const list = document.getElementById("notification-list");
+      const countBadge = document.getElementById("unread-count");
+      const description = document.getElementById("summary-description");
+      const markAllButton = document.getElementById("mark-all-button");
+      const toast = document.getElementById("toast");
+
+      let notifications = [];
+      let unreadCount = 0;
+      let toastTimer;
+
+      async function request(endpoint, options = {}) {
+        const response = await fetch(API_BASE_URL + endpoint, {
+          method: options.method || "GET",
+          credentials: "include",
+          headers: {
+            ...(options.body ? { "Content-Type": "application/json" } : {}),
+            ...(options.headers || {})
+          },
+          ...(options.body ? { body: JSON.stringify(options.body) } : {})
+        });
+
+        const contentType = response.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+          ? await response.json()
+          : {};
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || `Request failed (${response.status})`
+          );
+        }
+
+        return data;
+      }
+
+      function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[character]);
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.hidden = true;
+        }, 3200);
+      }
+
+      function timeAgo(dateValue) {
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return "Recently";
+
+        const seconds = Math.max(0, (Date.now() - date.getTime()) / 1000);
+
+        if (seconds < 60) return "Just now";
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+        if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+
+        return date.toLocaleDateString(undefined, {
+          day: "numeric",
+          month: "short",
+          year: date.getFullYear() !== new Date().getFullYear()
+            ? "numeric"
+            : undefined
+        });
+      }
+
+      function getSenderName(notification) {
+        const sender = notification.sender;
+
+        if (sender && typeof sender === "object") {
+          return sender.name || sender.username || "Someone";
+        }
+
+        return "Someone";
+      }
+
+      function getSenderUsername(notification) {
+        const sender = notification.sender;
+
+        if (sender && typeof sender === "object") {
+          return sender.username || "";
+        }
+
+        return "";
+      }
+
+      function getAvatar(notification) {
+        const sender = notification.sender;
+        const picture =
+          sender && typeof sender === "object"
+            ? sender.profilePicture
+            : "";
+
+        if (typeof picture === "string" && /^https?:\/\//i.test(picture)) {
+          return `<img src="${escapeHTML(picture)}" alt="" loading="lazy"
+            referrerpolicy="no-referrer"
+            onerror="this.remove()">`;
+        }
+
+        return escapeHTML(getSenderName(notification).charAt(0).toUpperCase());
+      }
+
+      function getMessage(notification) {
+        const type = notification.type;
+        const sender = `<strong>${escapeHTML(getSenderName(notification))}</strong>`;
+        const message = String(notification.message || "").trim();
+
+        if (type === "follow") {
+          return `${sender} started following you.`;
+        }
+
+        if (type === "like") {
+          return `${sender} liked your post.`;
+        }
+
+        if (type === "comment") {
+          return message
+            ? `${sender} ${escapeHTML(message)}`
+            : `${sender} commented on your post.`;
+        }
+
+        return message
+          ? `${sender} ${escapeHTML(message)}`
+          : `${sender} sent you a notification.`;
+      }
+
+      function getNotificationLink(notification) {
+        const username = getSenderUsername(notification);
+
+        if (username) {
+          return `profile.html?username=${encodeURIComponent(username)}`;
+        }
+
+        return "discover.html";
+      }
+
+      function renderNotifications() {
+        countBadge.textContent = String(unreadCount);
+        description.textContent = unreadCount === 0
+          ? `${notifications.length} recent notification${notifications.length === 1 ? "" : "s"}`
+          : `You have ${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}.`;
+
+        markAllButton.disabled = unreadCount === 0;
+
+        if (!notifications.length) {
+          list.innerHTML = `
+            <div class="state">
+              <div class="state-icon">🔔</div>
+              <h3>You're all caught up!</h3>
+              <p>
+                When someone follows you, likes your post, or comments,
+                their activity will appear here.
+              </p>
+            </div>`;
+          return;
+        }
+
+        list.innerHTML = notifications.map(notification => {
+          const id = String(notification._id || "");
+          const isUnread = !notification.isRead;
+          const link = getNotificationLink(notification);
+          const sender = getSenderName(notification);
+          const typeLabel = {
+            follow: "View profile",
+            like: "View profile",
+            comment: "View profile"
+          }[notification.type] || "View profile";
+
+          return `
+            <article class="notification ${isUnread ? "unread" : ""}"
+              data-id="${escapeHTML(id)}">
+              <a class="avatar"
+                href="${escapeHTML(link)}"
+                aria-label="Open ${escapeHTML(sender)}'s profile">
+                ${getAvatar(notification)}
+              </a>
+
+              <div class="notification-content">
+                <p class="notification-text">${getMessage(notification)}</p>
+                <p class="notification-time">
+                  ${escapeHTML(timeAgo(notification.createdAt))}
+                </p>
+                <div class="notification-actions">
+                  <a class="action-link"
+                    href="${escapeHTML(link)}">${typeLabel}</a>
+                  ${isUnread ? `
+                    <button class="action-link mark-one-button"
+                      type="button" data-id="${escapeHTML(id)}"
+                      style="border:0;background:none;cursor:pointer">
+                      Mark as read
+                    </button>` : ""}
+                </div>
+              </div>
+
+              <span class="unread-dot" aria-label="${isUnread ? "Unread" : "Read"}"></span>
+            </article>`;
+        }).join("");
+      }
+
+      async function loadNotifications() {
+        list.innerHTML = `
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>`;
+
+        markAllButton.disabled = true;
+
+        try {
+          const data = await request("/notifications");
+
+          notifications = Array.isArray(data.notifications)
+            ? data.notifications
+            : [];
+
+          unreadCount = Number.isFinite(Number(data.unreadCount))
+            ? Number(data.unreadCount)
+            : notifications.filter(item => !item.isRead).length;
+
+          renderNotifications();
+        } catch (error) {
+          console.error("Could not load notifications:", error);
+
+          countBadge.textContent = "—";
+          description.textContent = "Unable to load your activity.";
+          markAllButton.disabled = true;
+
+          list.innerHTML = `
+            <div class="state">
+              <div class="state-icon">⚠️</div>
+              <h3>Couldn't load notifications</h3>
+              <p>${escapeHTML(error.message || "Please try again.")}
+                If this is an authentication error, log in first.</p>
+              <button class="retry-button" id="retry-button" type="button">
+                Try again
+              </button>
+              <p style="margin-top:14px">
+                <a class="action-link" href="login.html">Go to login</a>
+              </p>
+            </div>`;
+        }
+      }
+
+      async function markOneAsRead(id) {
+        if (!id) return;
+
+        try {
+          await request(
+            `/notifications/${encodeURIComponent(id)}/read`,
+            { method: "PATCH" }
+          );
+
+          const item = notifications.find(
+            notification => String(notification._id) === id
+          );
+
+          if (item && !item.isRead) {
+            item.isRead = true;
+            unreadCount = Math.max(0, unreadCount - 1);
+          }
+
+          renderNotifications();
+          showToast("Notification marked as read.");
+        } catch (error) {
+          showToast(error.message || "Couldn't mark notification as read.");
+        }
+      }
+
+      async function markAllAsRead() {
+        if (unreadCount === 0) return;
+
+        markAllButton.disabled = true;
+        markAllButton.textContent = "Marking...";
+
+        try {
+          await request("/notifications/read-all", { method: "PATCH" });
+
+          notifications = notifications.map(item => ({
+            ...item,
+            isRead: true
+          }));
+
+          unreadCount = 0;
+          renderNotifications();
+          showToast("All notifications marked as read.");
+        } catch (error) {
+          showToast(error.message || "Couldn't update notifications.");
+        } finally {
+          markAllButton.textContent = "✓ Mark all as read";
+          markAllButton.disabled = unreadCount === 0;
+        }
+      }
+
+      markAllButton.addEventListener("click", markAllAsRead);
+
+      list.addEventListener("click", event => {
+        const button = event.target.closest(".mark-one-button");
+        if (!button) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        markOneAsRead(button.dataset.id);
+      });
+
+      list.addEventListener("click", event => {
+        if (event.target.closest("a")) return;
+
+        const article = event.target.closest(".notification");
+        if (!article) return;
+
+        const item = notifications.find(
+          notification => String(notification._id) === article.dataset.id
+        );
+
+        if (item && !item.isRead) {
+          markOneAsRead(String(item._id));
+        }
+      });
+
+      list.addEventListener("error", event => {
+        if (event.target.tagName === "IMG") {
+          event.target.style.display = "none";
+        }
+      }, true);
+
+      list.addEventListener("click", event => {
+        if (event.target.id === "retry-button") {
+          loadNotifications();
+        }
+      });
+
+      loadNotifications();
+    })();
+  </script>
+</body>
+</html>
