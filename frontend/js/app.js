@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const postError = document.getElementById("post-form-error");
   const postSuccess = document.getElementById("post-form-success");
   const publishButton = document.getElementById("publish-post-button");
-  const navActions = document.getElementById("nav-actions");
   const year = document.getElementById("current-year");
 
   if (year) {
@@ -29,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showFormMessage(element, message) {
     if (!element) return;
-
     element.textContent = message;
     element.hidden = false;
   }
@@ -64,8 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
   async function checkLogin() {
     try {
       const result = await API.getMe();
-      currentUser = result.user || null;
-    } catch {
+
+      currentUser =
+        result?.user ||
+        result?.data?.user ||
+        result?.data ||
+        null;
+    } catch (error) {
       currentUser = null;
     }
 
@@ -77,25 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
       loginPrompt.hidden = Boolean(currentUser);
     }
 
-    if (navActions && currentUser) {
-      navActions.innerHTML = `
-        <a class="btn btn-light" href="profile.html">My profile</a>
-        <button class="btn btn-primary" id="logout-button" type="button">
-          Log out
-        </button>
-      `;
-
-      document
-        .getElementById("logout-button")
-        ?.addEventListener("click", async () => {
-          try {
-            await API.logout();
-            window.location.reload();
-          } catch (error) {
-            alert(error.message || "Unable to log out.");
-          }
-        });
-    }
+    // Important:
+    // Do not replace navActions.innerHTML here.
+    // index.html handles Profile, Logout and the notification bell.
+    // Replacing the navigation was hiding the notification bell.
   }
 
   function createPostCard(post) {
@@ -398,7 +386,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (publishButton) {
         publishButton.disabled = true;
-        publishButton.textContent = "Ho Raha hai wait karo ...";
+        publishButton.textContent = "Publishing...";
       }
 
       try {
