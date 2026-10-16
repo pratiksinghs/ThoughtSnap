@@ -1,8 +1,10 @@
+
 const express = require("express");
 const mongoose = require("mongoose");
 
 const User = require("../models/User");
 const Post = require("../models/Post");
+const Notification = require("../models/Notification");
 const auth = require("../middleware/auth");
 
 const router = express.Router();
@@ -80,7 +82,6 @@ router.get("/search", async (req, res) => {
 });
 
 // GET /api/users/:username
-// Load the profile belonging to the requested username.
 router.get("/:username", async (req, res) => {
   try {
     const username = String(req.params.username || "").trim();
@@ -92,7 +93,6 @@ router.get("/:username", async (req, res) => {
       });
     }
 
-    // Match the requested username exactly, ignoring letter case.
     const user = await User.findOne({
       username: {
         $regex: "^" + escapeRegex(username) + "$",
@@ -144,7 +144,6 @@ router.get("/:username", async (req, res) => {
 });
 
 // PUT /api/users/me
-// Edit the logged-in user's own profile.
 router.put("/me", auth, async (req, res) => {
   try {
     const { name, bio, avatar } = req.body;
@@ -244,7 +243,7 @@ router.put("/me", auth, async (req, res) => {
 });
 
 // POST /api/users/:id/follow
-// Toggle follow/unfollow.
+// Toggle follow/unfollow and notify the followed user.
 router.post("/:id/follow", auth, async (req, res) => {
   try {
     const targetId = req.params.id;
@@ -273,7 +272,7 @@ router.post("/:id/follow", auth, async (req, res) => {
       });
     }
 
-    const alreadyFollowing = target.followers.some(
+    const alreadyFollowing = (target.followers || []).some(
       (id) => getId(id) === currentId
     );
 
@@ -297,6 +296,14 @@ router.post("/:id/follow", auth, async (req, res) => {
         { _id: currentId },
         { $addToSet: { following: target._id } }
       );
+
+      // Create a notification only when a new follow occurs.
+      await Notification.create({
+        recipient: target._id,
+        sender: req.user._id,
+        type: "follow",
+        message: "started following you"
+      });
     }
 
     const updatedTarget = await User.findById(targetId);

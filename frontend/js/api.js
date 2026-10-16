@@ -137,6 +137,23 @@ const API = {
       `/users/${encodeURIComponent(userId)}/follow`,
       { method: "POST" }
     );
+  },
+
+  getNotifications() {
+    return this.request("/notifications");
+  },
+
+  markAllNotificationsRead() {
+    return this.request("/notifications/read-all", {
+      method: "PATCH"
+    });
+  },
+
+  markNotificationRead(notificationId) {
+    return this.request(
+      `/notifications/${encodeURIComponent(notificationId)}/read`,
+      { method: "PATCH" }
+    );
   }
 };
 

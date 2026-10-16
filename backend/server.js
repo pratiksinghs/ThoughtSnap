@@ -11,13 +11,12 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/users");
+const notificationRoutes = require("./routes/notifications");
 
 const app = express();
 
 app.disable("x-powered-by");
 
-// Render is the trusted reverse proxy in production.
-// Do not trust arbitrary client-supplied forwarding headers.
 const production = process.env.NODE_ENV === "production";
 
 if (production) {
@@ -85,6 +84,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

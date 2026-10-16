@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const { Readable } = require("stream");
 
 const Post = require("../models/Post");
+const Notification = require("../models/Notification");
 const auth = require("../middleware/auth");
 const upload = require("../middleware/upload");
 const cloudinary = require("../config/cloudinary");
@@ -194,10 +195,7 @@ router.post("/", auth, handleUpload, async (req, res) => {
     return res.status(201).json({
       success: true,
       message: "Post published successfully",
-      post: serializePost(
-        populated,
-        req.user._id.toString()
-      )
+      post: serializePost(populated, req.user._id.toString())
     });
   } catch (error) {
     if (uploadedPublicId) {
@@ -243,7 +241,6 @@ router.delete("/:id", auth, async (req, res) => {
       });
     }
 
-    // Only the owner is allowed to delete this post.
     if (post.author.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
@@ -251,10 +248,8 @@ router.delete("/:id", auth, async (req, res) => {
       });
     }
 
-    // Delete the post from MongoDB first.
     await Post.findByIdAndDelete(post._id);
 
-    // Attempt Cloudinary cleanup if the post has an image.
     if (post.imagePublicId) {
       try {
         await cloudinary.uploader.destroy(
@@ -304,7 +299,6 @@ router.post("/:id/like", auth, async (req, res) => {
     }
 
     const userId = req.user._id;
-
     const alreadyLiked = post.likes.some(
       (id) => id.toString() === userId.toString()
     );
@@ -316,6 +310,27 @@ router.post("/:id/like", auth, async (req, res) => {
     }
 
     await post.save();
+
+    // Notify the post owner only when another user likes the post.
+    if (
+      !alreadyLiked &&
+      post.author.toString() !== userId.toString()
+    ) {
+      try {
+        await Notification.create({
+          recipient: post.author,
+          sender: userId,
+          type: "like",
+          post: post._id,
+          message: "liked your post"
+        });
+      } catch (notificationError) {
+        console.error(
+          "Like notification error:",
+          notificationError.message
+        );
+      }
+    }
 
     return res.json({
       success: true,
@@ -369,6 +384,24 @@ router.post("/:id/comments", auth, async (req, res) => {
     });
 
     await post.save();
+
+    // Notify the post owner when someone else comments.
+    if (post.author.toString() !== req.user._id.toString()) {
+      try {
+        await Notification.create({
+          recipient: post.author,
+          sender: req.user._id,
+          type: "comment",
+          post: post._id,
+          message: `commented on your post: ${text.slice(0, 200)}`
+        });
+      } catch (notificationError) {
+        console.error(
+          "Comment notification error:",
+          notificationError.message
+        );
+      }
+    }
 
     const populated = await Post.findById(post._id)
       .populate("comments.author", "name username")
