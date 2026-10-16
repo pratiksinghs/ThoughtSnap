@@ -92,6 +92,13 @@ const API = {
     });
   },
 
+  deletePost(postId) {
+    return this.request(
+      `/posts/${encodeURIComponent(postId)}`,
+      { method: "DELETE" }
+    );
+  },
+
   toggleLike(postId) {
     return this.request(
       `/posts/${encodeURIComponent(postId)}/like`,

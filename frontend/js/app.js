@@ -46,6 +46,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getUserId(user) {
+    return String(user?._id || user?.id || user?.userId || "");
+  }
+
+  function isOwnPost(post) {
+    const loggedInUserId = getUserId(currentUser);
+    const authorId = getUserId(post.author);
+
+    return Boolean(
+      loggedInUserId &&
+      authorId &&
+      loggedInUserId === authorId
+    );
+  }
+
   async function checkLogin() {
     try {
       const result = await API.getMe();
@@ -89,6 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const username = escapeHTML(author.username || "user");
     const caption = escapeHTML(post.caption || "");
     const imageUrl = escapeHTML(post.imageUrl || "");
+    const rawPostId = String(post.id || post._id || "");
+    const postId = escapeHTML(rawPostId);
 
     const likes = Array.isArray(post.likes)
       ? post.likes.length
@@ -98,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ? post.comments
       : [];
 
-    const postId = escapeHTML(post.id || post._id || "");
+    const ownPost = isOwnPost(post);
 
     const card = document.createElement("article");
     card.className = "feed-card";
@@ -113,6 +130,29 @@ document.addEventListener("DOMContentLoaded", () => {
           <strong>${authorName}</strong>
           <p>@${username}</p>
         </div>
+
+        ${
+          ownPost
+            ? `
+              <button
+                class="delete-post-button"
+                type="button"
+                data-post-id="${postId}"
+                style="
+                  margin-left:auto;
+                  border:1px solid #dc2626;
+                  color:#dc2626;
+                  background:transparent;
+                  padding:8px 12px;
+                  border-radius:8px;
+                  cursor:pointer;
+                "
+              >
+                Delete
+              </button>
+            `
+            : ""
+        }
       </div>
 
       ${
@@ -179,6 +219,35 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
 
     card
+      .querySelector(".delete-post-button")
+      ?.addEventListener("click", async event => {
+        const button = event.currentTarget;
+
+        if (!rawPostId) {
+          alert("Post ID is missing. Unable to delete this post.");
+          return;
+        }
+
+        const confirmed = window.confirm(
+          "Are you sure you want to delete this post? This action cannot be undone."
+        );
+
+        if (!confirmed) return;
+
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        try {
+          await API.deletePost(rawPostId);
+          await loadFeed();
+        } catch (error) {
+          alert(error.message || "Unable to delete this post.");
+          button.disabled = false;
+          button.textContent = "Delete";
+        }
+      });
+
+    card
       .querySelector(".post-like-button")
       ?.addEventListener("click", async event => {
         if (!currentUser) {
@@ -190,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.disabled = true;
 
         try {
-          await API.toggleLike(post.id || post._id);
+          await API.toggleLike(rawPostId);
           await loadFeed();
         } catch (error) {
           alert(error.message || "Unable to like this post.");
@@ -214,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.disabled = true;
 
         try {
-          await API.addComment(post.id || post._id, text);
+          await API.addComment(rawPostId, text);
           await loadFeed();
         } catch (error) {
           alert(error.message || "Unable to add comment.");
@@ -278,7 +347,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const file = postImage?.files?.[0] || null;
       const caption = postCaption?.value.trim() || "";
 
-      // Allow text-only posts and photo posts.
       if (!caption && !file) {
         showFormMessage(
           postError,
@@ -295,7 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Validate the image only when a photo was selected.
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
           showFormMessage(
@@ -323,7 +390,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const formData = new FormData();
 
-      // Send the image only if one was selected.
       if (file) {
         formData.append("image", file);
       }
