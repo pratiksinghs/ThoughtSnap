@@ -12,6 +12,9 @@ const cloudinary = require("../config/cloudinary");
 
 const router = express.Router();
 
+const MIN_AVATAR_SIZE = 50 * 1024;
+const MAX_AVATAR_SIZE = 10 * 1024 * 1024;
+
 function getId(value) {
   return String(value?._id || value?.id || value || "");
 }
@@ -47,9 +50,11 @@ function uploadAvatarToCloudinary(buffer) {
       },
       (error, result) => {
         if (error) return reject(error);
+
         if (!result?.secure_url) {
           return reject(new Error("Cloudinary returned no image URL"));
         }
+
         resolve(result);
       }
     );
@@ -62,13 +67,16 @@ function uploadAvatarToCloudinary(buffer) {
 // GET /api/users/search?q=pratik
 router.get("/search", async (req, res) => {
   try {
-    const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+    const q = typeof req.query.q === "string"
+      ? req.query.q.trim()
+      : "";
 
     if (!q) {
       return res.json({ success: true, users: [] });
     }
 
     const escaped = escapeRegex(q);
+
     const users = await User.find({
       $or: [
         { username: { $regex: escaped, $options: "i" } },
@@ -85,6 +93,7 @@ router.get("/search", async (req, res) => {
     });
   } catch (error) {
     console.error("User search error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to search users"
@@ -93,64 +102,89 @@ router.get("/search", async (req, res) => {
 });
 
 // POST /api/users/me/avatar
-router.post("/me/avatar", auth, (req, res, next) => {
-  upload.single("avatar")(req, res, (error) => {
-    if (!error) return next();
+router.post(
+  "/me/avatar",
+  auth,
+  (req, res, next) => {
+    upload.single("avatar")(req, res, (error) => {
+      if (!error) return next();
 
-    const message =
-      error.code === "LIMIT_FILE_SIZE"
-        ? "Image must be 5 MB or smaller"
-        : error.message || "Unable to process the selected image";
+      if (error.code === "LIMIT_FILE_SIZE") {
+        return res.status(413).json({
+          success: false,
+          message: "Profile photo must be 10 MB or smaller."
+        });
+      }
 
-    return res.status(400).json({ success: false, message });
-  });
-}, async (req, res) => {
-  try {
-    if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "Please select an image first"
+        message:
+          error.message || "Unable to process the selected image"
       });
-    }
-
-    const result = await uploadAvatarToCloudinary(req.file.buffer);
-
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { $set: { avatar: result.secure_url } },
-      { new: true, runValidators: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "Logged-in user not found"
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: "Profile photo updated successfully",
-      user: {
-        id: getId(user),
-        name: user.name,
-        username: user.username,
-        bio: user.bio || "",
-        avatar: user.avatar || ""
+    });
+  },
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Please select a profile photo first."
+        });
       }
-    });
-  } catch (error) {
-    console.error("Avatar upload error:", {
-      message: error.message,
-      http_code: error.http_code
-    });
 
-    return res.status(500).json({
-      success: false,
-      message: "Unable to upload profile photo. Please try again."
-    });
+      if (req.file.size < MIN_AVATAR_SIZE) {
+        return res.status(400).json({
+          success: false,
+          message: "Profile photo must be at least 50 KB."
+        });
+      }
+
+      if (req.file.size > MAX_AVATAR_SIZE) {
+        return res.status(413).json({
+          success: false,
+          message: "Profile photo must be 10 MB or smaller."
+        });
+      }
+
+      const result = await uploadAvatarToCloudinary(req.file.buffer);
+
+      const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { avatar: result.secure_url } },
+        { new: true, runValidators: true }
+      );
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Logged-in user not found"
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "Profile photo updated successfully",
+        user: {
+          id: getId(user),
+          name: user.name,
+          username: user.username,
+          bio: user.bio || "",
+          avatar: user.avatar || ""
+        }
+      });
+    } catch (error) {
+      console.error("Avatar upload error:", {
+        message: error.message,
+        http_code: error.http_code
+      });
+
+      return res.status(500).json({
+        success: false,
+        message: "Unable to upload profile photo. Please try again."
+      });
+    }
   }
-});
+);
 
 // GET /api/users/:username
 router.get("/:username", async (req, res) => {
@@ -193,7 +227,9 @@ router.get("/:username", async (req, res) => {
         id: getId(post),
         caption: post.caption || "",
         imageUrl: post.imageUrl || "",
-        likesCount: Array.isArray(post.likes) ? post.likes.length : 0,
+        likesCount: Array.isArray(post.likes)
+          ? post.likes.length
+          : 0,
         commentsCount: Array.isArray(post.comments)
           ? post.comments.length
           : 0,
@@ -202,6 +238,7 @@ router.get("/:username", async (req, res) => {
     });
   } catch (error) {
     console.error("Profile loading error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to load profile"
@@ -226,25 +263,33 @@ router.put("/me", auth, async (req, res) => {
           message: "Name must contain 2-50 characters"
         });
       }
+
       updates.name = name.trim();
     }
 
     if (bio !== undefined) {
-      if (typeof bio !== "string" || bio.trim().length > 250) {
+      if (
+        typeof bio !== "string" ||
+        bio.trim().length > 250
+      ) {
         return res.status(400).json({
           success: false,
           message: "Bio must be 250 characters or fewer"
         });
       }
+
       updates.bio = bio.trim();
     }
 
     if (avatar !== undefined) {
       if (
         typeof avatar !== "string" ||
-        (avatar !== "" &&
-          (!avatar.startsWith("https://") ||
-            !avatar.includes("res.cloudinary.com/"))
+        (
+          avatar !== "" &&
+          (
+            !avatar.startsWith("https://") ||
+            !avatar.includes("res.cloudinary.com/")
+          )
         )
       ) {
         return res.status(400).json({
@@ -252,6 +297,7 @@ router.put("/me", auth, async (req, res) => {
           message: "Avatar must be a valid Cloudinary HTTPS URL"
         });
       }
+
       updates.avatar = avatar;
     }
 
@@ -288,6 +334,7 @@ router.put("/me", auth, async (req, res) => {
     });
   } catch (error) {
     console.error("Profile update error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to update profile"
@@ -333,6 +380,7 @@ router.post("/:id/follow", auth, async (req, res) => {
         { _id: targetId },
         { $pull: { followers: req.user._id } }
       );
+
       await User.updateOne(
         { _id: currentId },
         { $pull: { following: target._id } }
@@ -342,6 +390,7 @@ router.post("/:id/follow", auth, async (req, res) => {
         { _id: targetId },
         { $addToSet: { followers: req.user._id } }
       );
+
       await User.updateOne(
         { _id: currentId },
         { $addToSet: { following: target._id } }
@@ -364,6 +413,7 @@ router.post("/:id/follow", auth, async (req, res) => {
     });
   } catch (error) {
     console.error("Follow error:", error);
+
     return res.status(500).json({
       success: false,
       message: "Unable to update follow status"
