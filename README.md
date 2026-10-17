@@ -37,7 +37,7 @@ ThoughtSnap is a full-stack photo and thought-sharing social platform where user
 
 **Database and Storage**
 - MongoDB Atlas
-- Cloudinary
+  
 
 **Deployment**
 - Vercel — Frontend
