@@ -21,7 +21,12 @@
     }
 
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -34,7 +39,9 @@
 
     a { color: inherit; text-decoration: none; }
     button { font: inherit; }
-    button:focus-visible, a:focus-visible {
+
+    button:focus-visible,
+    a:focus-visible {
       outline: 3px solid #93c5fd;
       outline-offset: 3px;
     }
@@ -76,7 +83,8 @@
       box-shadow: 0 6px 14px #2563eb35;
     }
 
-    .nav-links, .nav-actions {
+    .nav-links,
+    .nav-actions {
       display: flex;
       align-items: center;
       gap: 18px;
@@ -89,7 +97,11 @@
       transition: color .2s;
     }
 
-    .nav-links a:hover, .nav-links a.active { color: var(--blue); }
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--blue);
+    }
+
     .nav-actions { gap: 9px; }
 
     .btn {
@@ -107,6 +119,12 @@
     }
 
     .btn:hover { transform: translateY(-1px); }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+      transform: none;
+    }
 
     .btn-primary {
       color: #fff;
@@ -140,7 +158,10 @@
       cursor: pointer;
     }
 
-    .icon-button svg { width: 21px; height: 21px; }
+    .icon-button svg {
+      width: 21px;
+      height: 21px;
+    }
 
     .notification-badge {
       position: absolute;
@@ -224,8 +245,17 @@
       box-shadow: var(--shadow);
     }
 
-    .summary-label { font-size: 15px; font-weight: 800; color: #172554; }
-    .summary-description { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .summary-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: #172554;
+    }
+
+    .summary-description {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 13px;
+    }
 
     .count-badge {
       display: grid;
@@ -241,7 +271,6 @@
     }
 
     .mark-button { white-space: nowrap; }
-    .mark-button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
     .panel {
       overflow: hidden;
@@ -295,6 +324,7 @@
     .notification:last-child { border-bottom: 0; }
     .notification:hover { background: #fafcff; }
     .notification.unread { background: #f3f7ff; }
+
     .notification.unread:hover { background: #edf4ff; }
 
     .avatar {
@@ -311,9 +341,17 @@
       font-weight: 850;
     }
 
-    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-    .notification-content { flex: 1; min-width: 0; padding-top: 1px; }
+    .notification-content {
+      flex: 1;
+      min-width: 0;
+      padding-top: 1px;
+    }
 
     .notification-text {
       color: #475569;
@@ -322,7 +360,10 @@
       overflow-wrap: anywhere;
     }
 
-    .notification-text strong { color: #172554; font-weight: 800; }
+    .notification-text strong {
+      color: #172554;
+      font-weight: 800;
+    }
 
     .notification-time {
       margin-top: 6px;
@@ -350,6 +391,14 @@
 
     .action-link:hover { text-decoration: underline; }
 
+    .action-link:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .delete-notification-button { color: #dc2626; }
+    .delete-notification-button:hover { color: #991b1b; }
+
     .unread-dot {
       flex: 0 0 8px;
       width: 8px;
@@ -361,7 +410,10 @@
 
     .notification:not(.unread) .unread-dot { visibility: hidden; }
 
-    .state { padding: 60px 22px; text-align: center; }
+    .state {
+      padding: 60px 22px;
+      text-align: center;
+    }
 
     .state-icon {
       display: grid;
@@ -374,8 +426,20 @@
       font-size: 29px;
     }
 
-    .state h3 { margin: 0 0 9px; color: #172033; font-size: 19px; }
-    .state p { max-width: 410px; margin: 0 auto; color: #64748b; font-size: 13px; line-height: 1.8; }
+    .state h3 {
+      margin: 0 0 9px;
+      color: #172033;
+      font-size: 19px;
+    }
+
+    .state p {
+      max-width: 410px;
+      margin: 0 auto;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
     .state .btn { margin-top: 18px; }
 
     .skeleton {
@@ -387,7 +451,9 @@
       animation: shimmer 1.3s infinite;
     }
 
-    @keyframes shimmer { to { background-position: -200% 0; } }
+    @keyframes shimmer {
+      to { background-position: -200% 0; }
+    }
 
     .toast {
       position: fixed;
@@ -415,7 +481,11 @@
       background: #fff;
     }
 
-    .footer p, .footer > span { color: #94a3b8; font-size: 12px; }
+    .footer p,
+    .footer > span {
+      color: #94a3b8;
+      font-size: 12px;
+    }
 
     @media (max-width: 850px) {
       .nav-links { gap: 12px; }
@@ -423,7 +493,12 @@
     }
 
     @media (max-width: 700px) {
-      .navbar { flex-wrap: wrap; gap: 12px; padding: 12px 17px; }
+      .navbar {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 12px 17px;
+      }
+
       .nav-links {
         order: 3;
         width: 100%;
@@ -432,27 +507,67 @@
         padding-top: 10px;
         border-top: 1px solid #f1f5f9;
       }
+
       .nav-links a { font-size: 12px; }
       .nav-actions { margin-left: auto; gap: 6px; }
-      .nav-actions .btn { padding: 8px 10px; font-size: 12px; }
+
+      .nav-actions .btn {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+
       .brand { font-size: 19px; }
-      .page { width: calc(100% - 32px); padding: 42px 0 52px; }
-      .page-heading { align-items: stretch; flex-direction: column; gap: 18px; }
-      h1 { font-size: 39px; letter-spacing: -1.5px; }
+
+      .page {
+        width: calc(100% - 32px);
+        padding: 42px 0 52px;
+      }
+
+      .page-heading {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      h1 {
+        font-size: 39px;
+        letter-spacing: -1.5px;
+      }
+
       .mark-button { width: 100%; }
       .summary { padding: 17px; }
       .panel { border-radius: 18px; }
       .panel-heading { padding: 18px 16px; }
-      .notification { gap: 11px; padding: 17px 13px; }
-      .avatar { flex-basis: 40px; width: 40px; height: 40px; }
+
+      .notification {
+        gap: 11px;
+        padding: 17px 13px;
+      }
+
+      .avatar {
+        flex-basis: 40px;
+        width: 40px;
+        height: 40px;
+      }
+
       .notification-text { font-size: 13px; }
-      .footer { flex-wrap: wrap; justify-content: center; text-align: center; }
-      .footer .brand { width: 100%; justify-content: center; }
+
+      .footer {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .footer .brand {
+        width: 100%;
+        justify-content: center;
+      }
     }
 
     @media (max-width: 380px) {
       .nav-links { gap: 7px; }
       .nav-links a { font-size: 11px; }
+
       .nav-actions .btn { padding: 7px 8px; }
       .icon-button { width: 38px; height: 38px; }
       h1 { font-size: 34px; }
@@ -502,6 +617,7 @@
         <h1>Notifications <span aria-hidden="true">🔔</span></h1>
         <p class="subtitle">Stay up to date with the people and posts you care about.</p>
       </div>
+
       <button class="btn btn-light mark-button" id="mark-all-button" type="button" disabled>
         ✓ Mark all as read
       </button>
@@ -520,6 +636,7 @@
         <h2>Recent activity</h2>
         <span class="live-label"><span class="live-dot"></span> Latest updates</span>
       </div>
+
       <div id="notification-list" aria-live="polite">
         <div class="skeleton"></div>
         <div class="skeleton"></div>
@@ -602,7 +719,9 @@
         toast.textContent = message;
         toast.hidden = false;
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => { toast.hidden = true; }, 3200);
+        toastTimer = setTimeout(() => {
+          toast.hidden = true;
+        }, 3200);
       }
 
       function updateNavBadge(count) {
@@ -612,7 +731,10 @@
       }
 
       function addNavLink(label, href, className = "btn btn-light") {
-        if ([...navActions.querySelectorAll("a")].some(a => a.textContent.trim() === label)) return;
+        if ([...navActions.querySelectorAll("a")].some(a => a.textContent.trim() === label)) {
+          return;
+        }
+
         const link = document.createElement("a");
         link.href = href;
         link.className = className;
@@ -625,12 +747,18 @@
           if (window.API && typeof API.getMe === "function") {
             const me = await API.getMe();
             const user = me.user || me.data?.user || me.data || null;
+
             if (!user) return;
 
-            navActions.querySelectorAll('a[href="login.html"], a[href="register.html"]').forEach(a => a.remove());
+            navActions.querySelectorAll(
+              'a[href="login.html"], a[href="register.html"]'
+            ).forEach(a => a.remove());
+
             addNavLink(
               "Profile",
-              user.username ? `profile.html?username=${encodeURIComponent(user.username)}` : "profile.html"
+              user.username
+                ? `profile.html?username=${encodeURIComponent(user.username)}`
+                : "profile.html"
             );
 
             if (!navActions.querySelector("#logout-button")) {
@@ -639,8 +767,10 @@
               logout.type = "button";
               logout.className = "btn btn-light";
               logout.textContent = "Log out";
+
               logout.addEventListener("click", async () => {
                 logout.disabled = true;
+
                 try {
                   if (typeof API.logout === "function") {
                     await API.logout();
@@ -654,6 +784,7 @@
                   showToast(error.message || "Could not log out.");
                 }
               });
+
               navActions.appendChild(logout);
             }
           }
@@ -667,6 +798,7 @@
         if (Number.isNaN(date.getTime())) return "Recently";
 
         const seconds = Math.max(0, (Date.now() - date.getTime()) / 1000);
+
         if (seconds < 60) return "Just now";
         if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
         if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
@@ -675,21 +807,27 @@
         return date.toLocaleDateString(undefined, {
           day: "numeric",
           month: "short",
-          year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined
+          year: date.getFullYear() !== new Date().getFullYear()
+            ? "numeric"
+            : undefined
         });
       }
 
       function getSenderName(notification) {
         const sender = notification.sender;
+
         if (sender && typeof sender === "object") {
           return sender.name || sender.username || "Someone";
         }
+
         return "Someone";
       }
 
       function getSenderUsername(notification) {
         const sender = notification.sender;
-        return sender && typeof sender === "object" ? sender.username || "" : "";
+        return sender && typeof sender === "object"
+          ? sender.username || ""
+          : "";
       }
 
       function getAvatar(notification) {
@@ -702,24 +840,37 @@
           return `<img src="${escapeHTML(picture)}" alt="" loading="lazy" referrerpolicy="no-referrer">`;
         }
 
-        return escapeHTML(getSenderName(notification).charAt(0).toUpperCase() || "?");
+        return escapeHTML(
+          getSenderName(notification).charAt(0).toUpperCase() || "?"
+        );
       }
 
       function getMessage(notification) {
         const sender = `<strong>${escapeHTML(getSenderName(notification))}</strong>`;
         const message = String(notification.message || "").trim();
 
-        if (notification.type === "follow") return `${sender} started following you.`;
-        if (notification.type === "like") return `${sender} liked your post.`;
-        if (notification.type === "comment") {
-          return message ? `${sender} ${escapeHTML(message)}` : `${sender} commented on your post.`;
+        if (notification.type === "follow") {
+          return `${sender} started following you.`;
         }
 
-        return message ? `${sender} ${escapeHTML(message)}` : `${sender} sent you a notification.`;
+        if (notification.type === "like") {
+          return `${sender} liked your post.`;
+        }
+
+        if (notification.type === "comment") {
+          return message
+            ? `${sender} ${escapeHTML(message)}`
+            : `${sender} commented on your post.`;
+        }
+
+        return message
+          ? `${sender} ${escapeHTML(message)}`
+          : `${sender} sent you a notification.`;
       }
 
       function getNotificationLink(notification) {
         const username = getSenderUsername(notification);
+
         return username
           ? `profile.html?username=${encodeURIComponent(username)}`
           : "discover.html";
@@ -757,33 +908,52 @@
               <a class="avatar" href="${escapeHTML(link)}" aria-label="Open ${escapeHTML(sender)}'s profile">
                 ${getAvatar(notification)}
               </a>
+
               <div class="notification-content">
                 <p class="notification-text">${getMessage(notification)}</p>
                 <p class="notification-time">${escapeHTML(timeAgo(notification.createdAt))}</p>
+
                 <div class="notification-actions">
                   <a class="action-link" href="${escapeHTML(link)}">View profile</a>
+
                   ${isUnread ? `
-                    <button class="action-link mark-one-button" type="button" data-id="${escapeHTML(id)}">
+                    <button class="action-link mark-one-button"
+                      type="button" data-id="${escapeHTML(id)}">
                       Mark as read
                     </button>` : ""}
+
+                  <button class="action-link delete-notification-button"
+                    type="button" data-id="${escapeHTML(id)}"
+                    aria-label="Delete notification">
+                    Delete
+                  </button>
                 </div>
               </div>
+
               <span class="unread-dot" aria-label="${isUnread ? "Unread" : "Read"}"></span>
             </article>`;
         }).join("");
       }
 
       async function loadNotifications() {
-        list.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+        list.innerHTML = `
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>
+          <div class="skeleton"></div>`;
+
         markAllButton.disabled = true;
 
         try {
           const data = await request("/notifications");
+
           notifications = Array.isArray(data.notifications)
             ? data.notifications
-            : Array.isArray(data.data?.notifications) ? data.data.notifications : [];
+            : Array.isArray(data.data?.notifications)
+              ? data.data.notifications
+              : [];
 
           const count = data.unreadCount ?? data.data?.unreadCount;
+
           unreadCount = Number.isFinite(Number(count))
             ? Number(count)
             : notifications.filter(item => !item.isRead).length;
@@ -802,7 +972,9 @@
               <h3>Couldn't load notifications</h3>
               <p>${escapeHTML(error.message || "Please try again.")} If this is an authentication error, log in first.</p>
               <button class="btn btn-primary" id="retry-button" type="button">Try again</button>
-              <p style="margin-top:14px"><a class="action-link" href="login.html">Go to login</a></p>
+              <p style="margin-top:14px">
+                <a class="action-link" href="login.html">Go to login</a>
+              </p>
             </div>`;
         }
       }
@@ -811,7 +983,10 @@
         if (!id) return;
 
         try {
-          await request(`/notifications/${encodeURIComponent(id)}/read`, { method: "PATCH" });
+          await request(`/notifications/${encodeURIComponent(id)}/read`, {
+            method: "PATCH"
+          });
+
           const item = notifications.find(n => String(n._id) === id);
 
           if (item && !item.isRead) {
@@ -833,8 +1008,15 @@
         markAllButton.textContent = "Marking...";
 
         try {
-          await request("/notifications/read-all", { method: "PATCH" });
-          notifications = notifications.map(item => ({ ...item, isRead: true }));
+          await request("/notifications/read-all", {
+            method: "PATCH"
+          });
+
+          notifications = notifications.map(item => ({
+            ...item,
+            isRead: true
+          }));
+
           unreadCount = 0;
           renderNotifications();
           showToast("All notifications marked as read.");
@@ -846,16 +1028,63 @@
         }
       }
 
+      async function deleteNotification(id, button) {
+        if (!id || button.disabled) return;
+
+        if (!window.confirm("Delete this notification?")) return;
+
+        button.disabled = true;
+        button.textContent = "Deleting...";
+
+        try {
+          await request(`/notifications/${encodeURIComponent(id)}`, {
+            method: "DELETE"
+          });
+
+          const deleted = notifications.find(
+            item => String(item._id) === id
+          );
+
+          if (deleted && !deleted.isRead) {
+            unreadCount = Math.max(0, unreadCount - 1);
+          }
+
+          notifications = notifications.filter(
+            item => String(item._id) !== id
+          );
+
+          renderNotifications();
+          showToast("Notification deleted.");
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = "Delete";
+          showToast(error.message || "Couldn't delete notification.");
+        }
+      }
+
       markAllButton.addEventListener("click", markAllAsRead);
 
       list.addEventListener("click", event => {
         const retry = event.target.closest("#retry-button");
+
         if (retry) {
           loadNotifications();
           return;
         }
 
+        const deleteButton = event.target.closest(
+          ".delete-notification-button"
+        );
+
+        if (deleteButton) {
+          event.preventDefault();
+          event.stopPropagation();
+          deleteNotification(deleteButton.dataset.id, deleteButton);
+          return;
+        }
+
         const button = event.target.closest(".mark-one-button");
+
         if (button) {
           event.preventDefault();
           event.stopPropagation();
@@ -868,12 +1097,19 @@
         const article = event.target.closest(".notification");
         if (!article) return;
 
-        const item = notifications.find(n => String(n._id) === article.dataset.id);
-        if (item && !item.isRead) markOneAsRead(String(item._id));
+        const item = notifications.find(
+          n => String(n._id) === article.dataset.id
+        );
+
+        if (item && !item.isRead) {
+          markOneAsRead(String(item._id));
+        }
       });
 
       list.addEventListener("error", event => {
-        if (event.target.tagName === "IMG") event.target.style.display = "none";
+        if (event.target.tagName === "IMG") {
+          event.target.style.display = "none";
+        }
       }, true);
 
       setupNavigation();
