@@ -8,20 +8,44 @@ const Post = require("../models/Post");
 const Notification = require("../models/Notification");
 const auth = require("../middleware/auth");
 const upload = require("../middleware/upload");
-const cloudinary = require("../config/cloudinary");
 
 const router = express.Router();
 
 const MIN_AVATAR_SIZE = 50 * 1024;
 const MAX_AVATAR_SIZE = 10 * 1024 * 1024;
 
+const ALLOWED_AVATAR_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif"
+]);
+
+const GRIDFS_BUCKET_NAME = "thoughtsnapAvatars";
+
+function getAvatarBucket() {
+  if (!mongoose.connection.db) {
+    throw new Error("MongoDB is not connected");
+  }
+
+  return new mongoose.mongo.GridFSBucket(
+    mongoose.connection.db,
+    { bucketName: GRIDFS_BUCKET_NAME }
+  );
+}
+
 function getId(value) {
   return String(value?._id || value?.id || value || "");
 }
 
 function publicUser(user, currentUserId = "") {
-  const followers = Array.isArray(user.followers) ? user.followers : [];
-  const following = Array.isArray(user.following) ? user.following : [];
+  const followers = Array.isArray(user.followers)
+    ? user.followers
+    : [];
+
+  const following = Array.isArray(user.following)
+    ? user.following
+    : [];
 
   return {
     id: getId(user),
@@ -41,27 +65,56 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function uploadAvatarToCloudinary(buffer) {
+function uploadAvatarToGridFS(buffer, contentType, userId) {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: "thoughtsnap/avatars",
-        resource_type: "image"
-      },
-      (error, result) => {
-        if (error) return reject(error);
+    let uploadStream;
 
-        if (!result?.secure_url) {
-          return reject(new Error("Cloudinary returned no image URL"));
+    try {
+      uploadStream = getAvatarBucket().openUploadStream(
+        `avatar-${userId}-${Date.now()}`,
+        {
+          metadata: {
+            contentType,
+            userId: String(userId)
+          }
         }
+      );
+    } catch (error) {
+      reject(error);
+      return;
+    }
 
-        resolve(result);
-      }
+    uploadStream.once("error", reject);
+    uploadStream.once("finish", () => {
+      resolve(uploadStream.id);
+    });
+
+    Readable.from(buffer).pipe(uploadStream);
+  });
+}
+
+async function deleteGridFSAvatar(avatarUrl) {
+  if (typeof avatarUrl !== "string" || !avatarUrl) {
+    return;
+  }
+
+  try {
+    const parsedUrl = new URL(avatarUrl);
+    const match = parsedUrl.pathname.match(
+      /\/api\/users\/avatar\/([a-f\d]{24})$/i
     );
 
-    stream.on("error", reject);
-    Readable.from(buffer).pipe(stream);
-  });
+    if (!match) {
+      return;
+    }
+
+    const fileId = new mongoose.Types.ObjectId(match[1]);
+    await getAvatarBucket().delete(fileId);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      console.error("Old GridFS avatar cleanup error:", error.message);
+    }
+  }
 }
 
 // GET /api/users/search?q=pratik
@@ -101,13 +154,77 @@ router.get("/search", async (req, res) => {
   }
 });
 
+// GET /api/users/avatar/:id
+// Serves images stored in MongoDB GridFS.
+router.get("/avatar/:id", async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid avatar ID"
+      });
+    }
+
+    const fileId = new mongoose.Types.ObjectId(req.params.id);
+    const bucket = getAvatarBucket();
+    const files = await bucket.find({ _id: fileId }).toArray();
+    const file = files[0];
+
+    if (!file) {
+      return res.status(404).json({
+        success: false,
+        message: "Profile photo not found"
+      });
+    }
+
+    const contentType = file.metadata?.contentType;
+
+    if (!ALLOWED_AVATAR_TYPES.has(contentType)) {
+      return res.status(415).json({
+        success: false,
+        message: "Unsupported profile photo type"
+      });
+    }
+
+    res.set("Content-Type", contentType);
+    res.set("X-Content-Type-Options", "nosniff");
+    res.set("Cross-Origin-Resource-Policy", "cross-origin");
+    res.set("Cache-Control", "public, max-age=86400");
+
+    const downloadStream = bucket.openDownloadStream(fileId);
+
+    downloadStream.once("error", (error) => {
+      console.error("GridFS avatar download error:", error.message);
+
+      if (!res.headersSent) {
+        res.status(404).end();
+      } else {
+        res.destroy(error);
+      }
+    });
+
+    downloadStream.pipe(res);
+  } catch (error) {
+    console.error("GridFS avatar retrieval error:", error.message);
+
+    if (!res.headersSent) {
+      return res.status(500).json({
+        success: false,
+        message: "Unable to load profile photo"
+      });
+    }
+  }
+});
+
 // POST /api/users/me/avatar
 router.post(
   "/me/avatar",
   auth,
   (req, res, next) => {
     upload.single("avatar")(req, res, (error) => {
-      if (!error) return next();
+      if (!error) {
+        return next();
+      }
 
       if (error.code === "LIMIT_FILE_SIZE") {
         return res.status(413).json({
@@ -118,17 +235,25 @@ router.post(
 
       return res.status(400).json({
         success: false,
-        message:
-          error.message || "Unable to process the selected image"
+        message: error.message || "Unable to process the selected image"
       });
     });
   },
   async (req, res) => {
+    let uploadedFileId = null;
+
     try {
       if (!req.file) {
         return res.status(400).json({
           success: false,
           message: "Please select a profile photo first."
+        });
+      }
+
+      if (!ALLOWED_AVATAR_TYPES.has(req.file.mimetype)) {
+        return res.status(400).json({
+          success: false,
+          message: "Only JPEG, PNG, WEBP and GIF images are allowed."
         });
       }
 
@@ -146,19 +271,33 @@ router.post(
         });
       }
 
-      const result = await uploadAvatarToCloudinary(req.file.buffer);
-
-      const user = await User.findByIdAndUpdate(
-        req.user._id,
-        { $set: { avatar: result.secure_url } },
-        { new: true, runValidators: true }
-      );
+      const user = await User.findById(req.user._id);
 
       if (!user) {
         return res.status(404).json({
           success: false,
           message: "Logged-in user not found"
         });
+      }
+
+      uploadedFileId = await uploadAvatarToGridFS(
+        req.file.buffer,
+        req.file.mimetype,
+        user._id
+      );
+
+      const previousAvatar = user.avatar || "";
+      const avatarUrl =
+        `${req.protocol}://${req.get("host")}` +
+        `/api/users/avatar/${uploadedFileId.toString()}`;
+
+      user.avatar = avatarUrl;
+      await user.save();
+
+      // Delete the previous photo only if it belongs to our GridFS bucket.
+      // Existing Cloudinary URLs are left untouched.
+      if (previousAvatar && previousAvatar !== avatarUrl) {
+        await deleteGridFSAvatar(previousAvatar);
       }
 
       return res.json({
@@ -173,10 +312,19 @@ router.post(
         }
       });
     } catch (error) {
-      console.error("Avatar upload error:", {
-        message: error.message,
-        http_code: error.http_code
-      });
+      console.error("GridFS avatar upload error:", error.message);
+
+      // Remove the newly uploaded file if saving the user's profile failed.
+      if (uploadedFileId) {
+        try {
+          await getAvatarBucket().delete(uploadedFileId);
+        } catch (cleanupError) {
+          console.error(
+            "New GridFS avatar cleanup error:",
+            cleanupError.message
+          );
+        }
+      }
 
       return res.status(500).json({
         success: false,
@@ -227,9 +375,7 @@ router.get("/:username", async (req, res) => {
         id: getId(post),
         caption: post.caption || "",
         imageUrl: post.imageUrl || "",
-        likesCount: Array.isArray(post.likes)
-          ? post.likes.length
-          : 0,
+        likesCount: Array.isArray(post.likes) ? post.likes.length : 0,
         commentsCount: Array.isArray(post.comments)
           ? post.comments.length
           : 0,
@@ -268,10 +414,7 @@ router.put("/me", auth, async (req, res) => {
     }
 
     if (bio !== undefined) {
-      if (
-        typeof bio !== "string" ||
-        bio.trim().length > 250
-      ) {
+      if (typeof bio !== "string" || bio.trim().length > 250) {
         return res.status(400).json({
           success: false,
           message: "Bio must be 250 characters or fewer"
@@ -282,20 +425,41 @@ router.put("/me", auth, async (req, res) => {
     }
 
     if (avatar !== undefined) {
-      if (
-        typeof avatar !== "string" ||
-        (
-          avatar !== "" &&
-          (
-            !avatar.startsWith("https://") ||
-            !avatar.includes("res.cloudinary.com/")
-          )
-        )
-      ) {
+      if (typeof avatar !== "string") {
         return res.status(400).json({
           success: false,
-          message: "Avatar must be a valid Cloudinary HTTPS URL"
+          message: "Invalid avatar URL"
         });
+      }
+
+      if (avatar !== "") {
+        let validAvatar = false;
+
+        try {
+          const parsedUrl = new URL(avatar);
+
+          const isCloudinary =
+            parsedUrl.protocol === "https:" &&
+            parsedUrl.hostname === "res.cloudinary.com";
+
+          const isGridFSAvatar =
+            /^\/api\/users\/avatar\/[a-f\d]{24}$/i.test(
+              parsedUrl.pathname
+            ) &&
+            (parsedUrl.protocol === "https:" ||
+              parsedUrl.protocol === "http:");
+
+          validAvatar = isCloudinary || isGridFSAvatar;
+        } catch {
+          validAvatar = false;
+        }
+
+        if (!validAvatar) {
+          return res.status(400).json({
+            success: false,
+            message: "Avatar must be a valid Cloudinary or GridFS URL"
+          });
+        }
       }
 
       updates.avatar = avatar;

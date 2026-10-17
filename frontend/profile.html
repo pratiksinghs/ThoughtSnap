@@ -5,21 +5,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080d19">
+  <meta name="description" content="View and manage your ThoughtSnap profile.">
   <title>Profile | ThoughtSnap</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     :root{--bg:#080d19;--card:#111a2c;--border:#25324a;--text:#f1f5f9;--muted:#9aa9c0;--blue:#60a5fa;--purple:#a78bfa}
     body{min-height:100vh;background:var(--bg);color:var(--text);font-family:Arial,sans-serif}
-    a{color:inherit;text-decoration:none}button{font:inherit;cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit;cursor:pointer}
     button:disabled{opacity:.55;cursor:wait}
     [hidden]{display:none!important}
     .navbar{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px max(5%,calc((100% - 1050px)/2));background:#0b1220;border-bottom:1px solid var(--border)}
-    .brand{font-size:23px;font-weight:800;letter-spacing:-1px}.brand span{color:var(--blue)}
-    .nav-links{display:flex;gap:18px;color:var(--muted);font-size:14px}.nav-links a:hover{color:white}
+    .brand{font-size:23px;font-weight:800;letter-spacing:-1px}
+    .brand span{color:var(--blue)}
+    .nav-links{display:flex;gap:18px;color:var(--muted);font-size:14px}
+    .nav-links a:hover{color:white}
     .page{max-width:900px;padding:28px 16px 60px;margin:auto}
     .profile-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden}
     .cover{height:180px;background:radial-gradient(circle at 20% 20%,#60a5fa88,transparent 35%),radial-gradient(circle at 80% 70%,#a78bfa88,transparent 35%),linear-gradient(135deg,#172554,#312e81,#0f172a)}
-    .profile-content{padding:0 28px 28px}.profile-top{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-top:-48px}
+    .profile-content{padding:0 28px 28px}
+    .profile-top{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-top:-48px}
     .avatar-wrap{position:relative;flex-shrink:0;width:108px;height:108px}
     .avatar{width:108px;height:108px;display:grid;place-items:center;overflow:hidden;border:5px solid var(--card);border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));color:#08111f;font-size:38px;font-weight:800}
     .avatar img{width:100%;height:100%;object-fit:cover}
@@ -27,34 +32,68 @@
     .profile-actions{display:flex;gap:10px;flex-wrap:wrap}
     .action-btn{padding:11px 17px;border:1px solid #465675;border-radius:10px;background:transparent;color:white;font-weight:700}
     .action-btn.primary{background:var(--blue);color:#08111f;border-color:var(--blue)}
-    .name{margin-top:15px;font-size:27px;overflow-wrap:anywhere}.username{margin-top:5px;color:var(--muted)}
+    .name{margin-top:15px;font-size:27px;overflow-wrap:anywhere}
+    .username{margin-top:5px;color:var(--muted)}
     .bio{margin-top:18px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
-    .stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:23px}.stat{color:var(--muted);font-size:14px}.stat strong{color:white;font-size:19px;margin-right:5px}
-    .section-heading{display:flex;justify-content:space-between;align-items:center;margin:28px 0 16px}.section-heading h2{font-size:21px}.post-count{color:var(--muted);font-size:14px}
-    .posts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.post-card{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:14px;background:var(--card)}
-    .post-image{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#1e293b}.post-body{padding:12px}.post-caption{font-size:14px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}.post-meta{margin-top:10px;color:var(--muted);font-size:12px}
-    .message{padding:28px 16px;text-align:center;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:14px;line-height:1.7}.error{color:#fca5a5}
+    .stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:23px}
+    .stat{color:var(--muted);font-size:14px}
+    .stat strong{color:white;font-size:19px;margin-right:5px}
+    .section-heading{display:flex;justify-content:space-between;align-items:center;margin:28px 0 16px}
+    .section-heading h2{font-size:21px}
+    .post-count{color:var(--muted);font-size:14px}
+    .posts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .post-card{min-width:0;overflow:hidden;border:1px solid var(--border);border-radius:14px;background:var(--card)}
+    .post-image{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#1e293b}
+    .post-body{padding:12px}
+    .post-caption{font-size:14px;line-height:1.5;overflow-wrap:anywhere;white-space:pre-wrap}
+    .post-meta{margin-top:10px;color:var(--muted);font-size:12px}
+    .message{padding:28px 16px;text-align:center;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:14px;line-height:1.7}
+    .error{color:#fca5a5}
     .modal{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:18px;background:#000b;overflow-y:auto}
-    .modal.show{display:flex}.modal-card{width:100%;max-width:450px;padding:24px;border:1px solid var(--border);border-radius:18px;background:var(--card)}
-    .modal-card h2{margin-bottom:20px}.field{margin-bottom:16px}.field label{display:block;margin-bottom:7px;color:var(--muted);font-size:14px}
+    .modal.show{display:flex}
+    .modal-card{width:100%;max-width:450px;padding:24px;border:1px solid var(--border);border-radius:18px;background:var(--card)}
+    .modal-card h2{margin-bottom:20px}
+    .field{margin-bottom:16px}
+    .field label{display:block;margin-bottom:7px;color:var(--muted);font-size:14px}
     .field input,.field textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;outline:none;background:#080d19;color:white;font:inherit}
-    .field textarea{min-height:110px;resize:vertical}.field input:focus,.field textarea:focus{border-color:var(--blue)}
-    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}.form-error{color:#fca5a5;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+    .field textarea{min-height:110px;resize:vertical}
+    .field input:focus,.field textarea:focus{border-color:var(--blue)}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap}
+    .form-error{color:#fca5a5;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
     .photo-preview{width:140px;height:140px;margin:0 auto 16px;border:3px solid var(--border);border-radius:50%;overflow:hidden;background:#080d19;display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center}
     .photo-preview img{width:100%;height:100%;object-fit:cover}
     .photo-help{color:var(--muted);font-size:13px;line-height:1.6;margin:10px 0}
     .status{margin-top:12px;font-size:13px;line-height:1.5;overflow-wrap:anywhere}
-    @media(max-width:600px){.navbar{padding:15px}.nav-links{gap:12px;font-size:13px}.brand{font-size:20px}.cover{height:130px}.profile-content{padding:0 17px 22px}.avatar-wrap,.avatar{width:88px;height:88px}.avatar{font-size:30px}.photo-edit{width:31px;height:31px}.name{font-size:23px}.posts{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stats{gap:17px}.profile-actions{justify-content:flex-end}.action-btn{padding:10px 12px}}
+    @media(max-width:600px){
+      .navbar{padding:15px}
+      .nav-links{gap:12px;font-size:13px}
+      .brand{font-size:20px}
+      .cover{height:130px}
+      .profile-content{padding:0 17px 22px}
+      .avatar-wrap,.avatar{width:88px;height:88px}
+      .avatar{font-size:30px}
+      .photo-edit{width:31px;height:31px}
+      .name{font-size:23px}
+      .posts{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+      .stats{gap:17px}
+      .profile-actions{justify-content:flex-end}
+      .action-btn{padding:10px 12px}
+    }
   </style>
 </head>
 <body>
   <nav class="navbar">
     <a class="brand" href="index.html">Thought<span>Snap</span></a>
-    <div class="nav-links"><a href="index.html">Home</a><a href="discover.html">Discover</a><a href="settings.html">Settings</a></div>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="discover.html">Discover</a>
+      <a href="settings.html">Settings</a>
+    </div>
   </nav>
 
   <main class="page">
     <div id="page-message" class="message">Loading profile...</div>
+
     <section id="profile-section" hidden>
       <div class="profile-card">
         <div class="cover"></div>
@@ -69,9 +108,11 @@
               <button id="edit-profile-btn" class="action-btn" type="button" hidden>Edit Profile</button>
             </div>
           </div>
+
           <h1 id="profile-name" class="name">User</h1>
           <p id="profile-username" class="username">@username</p>
           <p id="profile-bio" class="bio">No bio added yet.</p>
+
           <div class="stats">
             <div class="stat"><strong id="post-count">0</strong> Posts</div>
             <div class="stat"><strong id="followers-count">0</strong> Followers</div>
@@ -79,7 +120,11 @@
           </div>
         </div>
       </div>
-      <div class="section-heading"><h2>Posts</h2><span id="posts-label" class="post-count">0 posts</span></div>
+
+      <div class="section-heading">
+        <h2>Posts</h2>
+        <span id="posts-label" class="post-count">0 posts</span>
+      </div>
       <div id="posts-container" class="posts"></div>
     </section>
   </main>
@@ -89,10 +134,16 @@
   <div id="photo-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="photo-modal-title">
     <div class="modal-card">
       <h2 id="photo-modal-title">Update Profile Photo</h2>
-      <div class="photo-preview"><img id="photo-preview-image" alt="Selected profile photo preview" hidden><span id="preview-placeholder">Your photo preview</span></div>
-      <p class="photo-help">Choose a JPG, PNG, WEBP or GIF image. Maximum size: 5 MB.</p>
+
+      <div class="photo-preview">
+        <img id="photo-preview-image" alt="Selected profile photo preview" hidden>
+        <span id="preview-placeholder">Your photo preview</span>
+      </div>
+
+      <p class="photo-help">Choose a JPG, PNG, WEBP or GIF image. Minimum size: 50 KB. Maximum size: 10 MB.</p>
       <p id="photo-error" class="form-error" role="alert"></p>
       <p id="photo-status" class="status" role="status"></p>
+
       <div class="modal-actions">
         <button id="cancel-photo" class="action-btn" type="button">Cancel</button>
         <button id="select-photo" class="action-btn" type="button">Choose Photo</button>
@@ -105,19 +156,33 @@
     <div class="modal-card">
       <h2 id="edit-modal-title">Edit Profile</h2>
       <form id="edit-profile-form">
-        <div class="field"><label for="edit-name">Display name</label><input id="edit-name" name="name" minlength="2" maxlength="50" required></div>
-        <div class="field"><label for="edit-bio">Bio</label><textarea id="edit-bio" name="bio" maxlength="250" placeholder="Tell people a little about yourself"></textarea></div>
+        <div class="field">
+          <label for="edit-name">Display name</label>
+          <input id="edit-name" name="name" minlength="2" maxlength="50" required>
+        </div>
+        <div class="field">
+          <label for="edit-bio">Bio</label>
+          <textarea id="edit-bio" name="bio" maxlength="250" placeholder="Tell people a little about yourself"></textarea>
+        </div>
         <p id="form-error" class="form-error" role="alert"></p>
-        <div class="modal-actions"><button id="cancel-edit" class="action-btn" type="button">Cancel</button><button id="save-profile" class="action-btn primary" type="submit">Save Changes</button></div>
+        <div class="modal-actions">
+          <button id="cancel-edit" class="action-btn" type="button">Cancel</button>
+          <button id="save-profile" class="action-btn primary" type="submit">Save Changes</button>
+        </div>
       </form>
     </div>
   </div>
 
   <script>
     const isLocal = ["localhost", "127.0.0.1"].includes(window.location.hostname);
-    const API_BASE_URL = isLocal
-      ? "http://localhost:5000/api"
-      : "https://thoughtsnap-backend.onrender.com/api";
+    const API_BASE_URL = (
+      window.THOUGHTSNAP_API_URL ||
+      (isLocal
+        ? "http://localhost:5000/api"
+        : "https://thoughtsnap-backend.onrender.com/api")
+    ).replace(/\/+$/, "");
+
+    const API_ORIGIN = new URL(API_BASE_URL).origin;
 
     const pageMessage = document.getElementById("page-message");
     const profileSection = document.getElementById("profile-section");
@@ -138,6 +203,15 @@
     const selectPhotoButton = document.getElementById("select-photo");
     const cancelPhotoButton = document.getElementById("cancel-photo");
 
+    const MIN_PHOTO_SIZE = 50 * 1024;
+    const MAX_PHOTO_SIZE = 10 * 1024 * 1024;
+    const ALLOWED_PHOTO_TYPES = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif"
+    ];
+
     let currentUser = null;
     let profileUser = null;
     let viewingOwnProfile = false;
@@ -155,6 +229,7 @@
 
     async function apiRequest(path, options = {}) {
       const headers = { ...(options.headers || {}) };
+
       if (options.body && !(options.body instanceof FormData)) {
         headers["Content-Type"] = "application/json";
       }
@@ -165,10 +240,15 @@
         headers
       });
 
-      const data = await response.json().catch(() => ({}));
+      const contentType = response.headers.get("content-type") || "";
+      const data = contentType.includes("application/json")
+        ? await response.json()
+        : {};
+
       if (!response.ok || data.success === false) {
         throw new Error(data.message || `Request failed (${response.status}).`);
       }
+
       return data;
     }
 
@@ -181,9 +261,20 @@
 
     function safeImage(url) {
       if (typeof url !== "string" || !url.trim()) return "";
+
       try {
-        const parsed = new URL(url, window.location.origin);
-        return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : "";
+        const parsed = new URL(url, API_ORIGIN);
+
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          return "";
+        }
+
+        // Backend avatar paths are relative to the API, not the frontend.
+        if (url.startsWith("/api/users/avatar/")) {
+          return new URL(url, API_ORIGIN).href;
+        }
+
+        return parsed.href;
       } catch {
         return "";
       }
@@ -192,15 +283,19 @@
     function renderAvatar(user) {
       const avatar = document.getElementById("avatar");
       avatar.replaceChildren();
+
       const imageUrl = safeImage(user?.avatar);
 
       if (imageUrl) {
         const image = document.createElement("img");
         image.src = imageUrl;
         image.alt = displayName(user) + " avatar";
+
         image.onerror = () => {
+          avatar.replaceChildren();
           avatar.textContent = displayName(user).charAt(0).toUpperCase();
         };
+
         avatar.appendChild(image);
       } else {
         avatar.textContent = displayName(user).charAt(0).toUpperCase();
@@ -222,6 +317,7 @@
       posts.forEach(post => {
         const card = document.createElement("article");
         card.className = "post-card";
+
         const imageUrl = safeImage(post.imageUrl || post.image);
 
         if (imageUrl) {
@@ -235,14 +331,22 @@
 
         const body = document.createElement("div");
         body.className = "post-body";
+
         const caption = document.createElement("p");
         caption.className = "post-caption";
         caption.textContent = post.caption || post.content || post.text || "";
 
         const meta = document.createElement("p");
         meta.className = "post-meta";
-        const likes = Array.isArray(post.likes) ? post.likes.length : (Number(post.likesCount) || 0);
-        const comments = Array.isArray(post.comments) ? post.comments.length : (Number(post.commentsCount) || 0);
+
+        const likes = Array.isArray(post.likes)
+          ? post.likes.length
+          : (Number(post.likesCount) || 0);
+
+        const comments = Array.isArray(post.comments)
+          ? post.comments.length
+          : (Number(post.commentsCount) || 0);
+
         meta.textContent = `${likes} likes · ${comments} comments`;
 
         body.append(caption, meta);
@@ -262,19 +366,27 @@
 
     function renderProfile(user, posts) {
       profileUser = user;
+
       document.getElementById("profile-name").textContent = displayName(user);
       document.getElementById("profile-username").textContent = "@" + (user.username || "user");
       document.getElementById("profile-bio").textContent = user.bio || "No bio added yet.";
       document.getElementById("post-count").textContent = posts.length;
-      document.getElementById("posts-label").textContent = posts.length + (posts.length === 1 ? " post" : " posts");
-      document.getElementById("followers-count").textContent = Number(user.followersCount ?? user.followers?.length) || 0;
-      document.getElementById("following-count").textContent = Number(user.followingCount ?? user.following?.length) || 0;
+      document.getElementById("posts-label").textContent =
+        posts.length + (posts.length === 1 ? " post" : " posts");
+
+      document.getElementById("followers-count").textContent =
+        Number(user.followersCount ?? user.followers?.length) || 0;
+
+      document.getElementById("following-count").textContent =
+        Number(user.followingCount ?? user.following?.length) || 0;
 
       renderAvatar(user);
       renderPosts(posts);
+
       editButton.hidden = !viewingOwnProfile;
       changePhotoButton.hidden = !viewingOwnProfile;
       followButton.hidden = viewingOwnProfile;
+
       updateFollowButton();
       pageMessage.hidden = true;
       profileSection.hidden = false;
@@ -284,31 +396,52 @@
       try {
         const params = new URLSearchParams(window.location.search);
         const requestedUsername = (params.get("username") || "").trim().replace(/^@/, "");
+
         const authData = await apiRequest("/auth/me");
         currentUser = authData.user || authData.data?.user;
 
-        if (!currentUser) throw new Error("Please log in to view profiles.");
+        if (!currentUser) {
+          throw new Error("Please log in to view profiles.");
+        }
 
         const ownUsername = String(currentUser.username || "").trim();
-        viewingOwnProfile = !requestedUsername || requestedUsername.toLowerCase() === ownUsername.toLowerCase();
+
+        viewingOwnProfile = !requestedUsername ||
+          requestedUsername.toLowerCase() === ownUsername.toLowerCase();
+
         const targetUsername = viewingOwnProfile ? ownUsername : requestedUsername;
 
-        if (!targetUsername) throw new Error("Username is missing. Open a profile from Discover.");
+        if (!targetUsername) {
+          throw new Error("Username is missing. Open a profile from Discover.");
+        }
 
         const profileData = await apiRequest("/users/" + encodeURIComponent(targetUsername));
         const user = profileData.user || profileData.data?.user;
-        const posts = Array.isArray(profileData.posts) ? profileData.posts : (Array.isArray(profileData.data?.posts) ? profileData.data.posts : []);
 
-        if (!user) throw new Error("The server did not return a profile for @" + targetUsername + ".");
+        const posts = Array.isArray(profileData.posts)
+          ? profileData.posts
+          : (Array.isArray(profileData.data?.posts) ? profileData.data.posts : []);
 
-        if (!viewingOwnProfile && String(user.username || "").toLowerCase() !== targetUsername.toLowerCase()) {
-          throw new Error(`Requested @${targetUsername}, but the server returned @${user.username || "unknown"}.`);
+        if (!user) {
+          throw new Error("The server did not return a profile for @" + targetUsername + ".");
+        }
+
+        if (
+          !viewingOwnProfile &&
+          String(user.username || "").toLowerCase() !== targetUsername.toLowerCase()
+        ) {
+          throw new Error(
+            `Requested @${targetUsername}, but the server returned @${user.username || "unknown"}.`
+          );
         }
 
         viewingOwnProfile = getId(user) === getId(currentUser) ||
           String(user.username || "").toLowerCase() === ownUsername.toLowerCase();
 
-        const followingList = Array.isArray(currentUser.following) ? currentUser.following : [];
+        const followingList = Array.isArray(currentUser.following)
+          ? currentUser.following
+          : [];
+
         isFollowing = Boolean(user.isFollowing) || followingList.some(item => {
           const followedId = typeof item === "object" ? getId(item) : String(item);
           return followedId === getId(user);
@@ -322,15 +455,22 @@
 
     followButton.addEventListener("click", async () => {
       if (!profileUser || viewingOwnProfile) return;
+
       followButton.disabled = true;
 
       try {
-        const result = await apiRequest("/users/" + encodeURIComponent(getId(profileUser)) + "/follow", { method: "POST" });
+        const result = await apiRequest(
+          "/users/" + encodeURIComponent(getId(profileUser)) + "/follow",
+          { method: "POST" }
+        );
+
         isFollowing = Boolean(result.following);
+
         if (result.followersCount !== undefined) {
           profileUser.followersCount = result.followersCount;
           document.getElementById("followers-count").textContent = result.followersCount;
         }
+
         updateFollowButton();
       } catch (error) {
         alert(error.message || "Unable to update follow status.");
@@ -341,13 +481,17 @@
 
     editButton.addEventListener("click", () => {
       if (!viewingOwnProfile || !currentUser) return;
+
       document.getElementById("edit-name").value = currentUser.name || "";
       document.getElementById("edit-bio").value = currentUser.bio || "";
       formError.textContent = "";
       editModal.classList.add("show");
     });
 
-    document.getElementById("cancel-edit").addEventListener("click", () => editModal.classList.remove("show"));
+    document.getElementById("cancel-edit").addEventListener("click", () => {
+      editModal.classList.remove("show");
+    });
+
     editModal.addEventListener("click", event => {
       if (event.target === editModal) editModal.classList.remove("show");
     });
@@ -375,8 +519,10 @@
 
         currentUser = result.user || { ...currentUser, name, bio };
         profileUser = { ...profileUser, name, bio };
+
         document.getElementById("profile-name").textContent = displayName(profileUser);
         document.getElementById("profile-bio").textContent = bio || "No bio added yet.";
+
         renderAvatar(profileUser);
         editModal.classList.remove("show");
       } catch (error) {
@@ -390,10 +536,12 @@
       selectedPhoto = null;
       uploadPhotoButton.disabled = true;
       avatarFile.value = "";
+
       if (previewObjectUrl) {
         URL.revokeObjectURL(previewObjectUrl);
         previewObjectUrl = "";
       }
+
       photoPreviewImage.removeAttribute("src");
       photoPreviewImage.hidden = true;
       previewPlaceholder.hidden = false;
@@ -407,13 +555,18 @@
     }
 
     function closePhotoModal() {
-      if (uploadPhotoButton.disabled === false && uploadPhotoButton.dataset.uploading === "true") return;
+      if (uploadPhotoButton.dataset.uploading === "true") return;
+
       photoModal.classList.remove("show");
       clearPhotoSelection();
     }
 
     changePhotoButton.addEventListener("click", openPhotoModal);
-    selectPhotoButton.addEventListener("click", () => avatarFile.click());
+
+    selectPhotoButton.addEventListener("click", () => {
+      avatarFile.click();
+    });
+
     cancelPhotoButton.addEventListener("click", closePhotoModal);
 
     photoModal.addEventListener("click", event => {
@@ -422,18 +575,24 @@
 
     avatarFile.addEventListener("change", () => {
       clearPhotoSelection();
+
       const file = avatarFile.files?.[0];
       if (!file) return;
 
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-      if (!allowedTypes.includes(file.type)) {
+      if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
         photoError.textContent = "Choose a JPG, PNG, WEBP or GIF image.";
         avatarFile.value = "";
         return;
       }
 
-      if (file.size > 5 * 1024 * 1024) {
-        photoError.textContent = "Image must be 5 MB or smaller.";
+      if (file.size < MIN_PHOTO_SIZE) {
+        photoError.textContent = "Image must be at least 50 KB.";
+        avatarFile.value = "";
+        return;
+      }
+
+      if (file.size > MAX_PHOTO_SIZE) {
+        photoError.textContent = "Image must be 10 MB or smaller.";
         avatarFile.value = "";
         return;
       }
@@ -454,6 +613,7 @@
       selectPhotoButton.disabled = true;
       cancelPhotoButton.disabled = true;
       uploadPhotoButton.dataset.uploading = "true";
+
       photoError.textContent = "";
       photoStatus.textContent = "Uploading photo...";
 
@@ -467,13 +627,16 @@
         });
 
         const updatedUser = result.user || {};
+
         if (!updatedUser.avatar) {
           throw new Error("Upload completed, but the server did not return the photo URL.");
         }
 
         currentUser = { ...currentUser, ...updatedUser };
         profileUser = { ...profileUser, ...updatedUser };
+
         renderAvatar(profileUser);
+
         photoStatus.textContent = "Profile photo updated successfully.";
         uploadPhotoButton.dataset.uploading = "false";
         photoModal.classList.remove("show");
